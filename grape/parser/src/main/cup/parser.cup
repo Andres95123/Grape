@@ -1,0 +1,29 @@
+package com.grape.cup;
+// Importar las clases necesarias
+import java_cup.runtime.Symbol;
+import com.grape.core.*;
+import com.grape.cup.*;
+import com.grape.jflex.*;
+
+parser code {:
+    public static void main(String[] args) throws Exception {
+        Parser parser = new Parser(new Scanner(new java.io.FileReader(args[0])));
+        parser.parse();
+    }
+:}
+
+// Definir las terminales
+terminal PLUS, MINUS;
+terminal NUMBER;
+
+// Definir las no terminales
+non terminal expr;
+
+// Definir precedencia de operadores (opcional)
+precedence left PLUS, MINUS;
+
+// Reglas de producción
+expr ::= expr PLUS expr
+       | expr MINUS expr
+       | NUMBER
+       ;
