@@ -5,10 +5,10 @@
 
 package com.grape.cup;
 
-import java_cup.runtime.Symbol;
-import com.grape.core.*;
-import com.grape.cup.*;
-import com.grape.jflex.*;
+import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
+import java_cup.runtime.ComplexSymbolFactory.Location;
+import java_cup.runtime.*;
+import java.io.*;
 import java_cup.runtime.XMLElement;
 
 /** CUP v0.11b 20160615 (GIT 4ac7450) generated parser.
@@ -17,7 +17,7 @@ import java_cup.runtime.XMLElement;
 public class Parser extends java_cup.runtime.lr_parser {
 
  public final Class getSymbolContainer() {
-    return sym.class;
+    return ParserSym.class;
 }
 
   /** Default constructor. */
@@ -34,8 +34,8 @@ public class Parser extends java_cup.runtime.lr_parser {
   /** Production table. */
   protected static final short _production_table[][] = 
     unpackFromStrings(new String[] {
-    "\000\004\000\002\002\005\000\002\002\004\000\002\002" +
-    "\005\000\002\002\003" });
+    "\000\005\000\002\002\004\000\002\002\004\000\002\002" +
+    "\002\000\002\003\006\000\002\003\006" });
 
   /** Access to production table. */
   public short[][] production_table() {return _production_table;}
@@ -43,12 +43,13 @@ public class Parser extends java_cup.runtime.lr_parser {
   /** Parse-action table. */
   protected static final short[][] _action_table = 
     unpackFromStrings(new String[] {
-    "\000\010\000\004\006\004\001\002\000\010\002\ufffe\004" +
-    "\ufffe\005\ufffe\001\002\000\010\002\010\004\006\005\007" +
-    "\001\002\000\004\006\004\001\002\000\004\006\004\001" +
-    "\002\000\004\002\000\001\002\000\010\002\uffff\004\uffff" +
-    "\005\uffff\001\002\000\010\002\001\004\001\005\001\001" +
-    "\002" });
+    "\000\014\000\006\002\uffff\004\004\001\002\000\006\005" +
+    "\011\006\012\001\002\000\004\002\010\001\002\000\006" +
+    "\002\uffff\004\004\001\002\000\004\002\000\001\002\000" +
+    "\004\002\001\001\002\000\004\004\015\001\002\000\004" +
+    "\004\013\001\002\000\004\007\014\001\002\000\006\002" +
+    "\ufffd\004\ufffd\001\002\000\004\007\016\001\002\000\006" +
+    "\002\ufffe\004\ufffe\001\002" });
 
   /** Access to parse-action table. */
   public short[][] action_table() {return _action_table;}
@@ -56,10 +57,11 @@ public class Parser extends java_cup.runtime.lr_parser {
   /** <code>reduce_goto</code> table. */
   protected static final short[][] _reduce_table = 
     unpackFromStrings(new String[] {
-    "\000\010\000\004\002\004\001\001\000\002\001\001\000" +
-    "\002\001\001\000\004\002\011\001\001\000\004\002\010" +
-    "\001\001\000\002\001\001\000\002\001\001\000\002\001" +
-    "\001" });
+    "\000\014\000\006\002\004\003\005\001\001\000\002\001" +
+    "\001\000\002\001\001\000\006\002\006\003\005\001\001" +
+    "\000\002\001\001\000\002\001\001\000\002\001\001\000" +
+    "\002\001\001\000\002\001\001\000\002\001\001\000\002" +
+    "\001\001\000\002\001\001" });
 
   /** Access to <code>reduce_goto</code> table. */
   public short[][] reduce_table() {return _reduce_table;}
@@ -88,7 +90,7 @@ public class Parser extends java_cup.runtime.lr_parser {
   /** Indicates start state. */
   public int start_state() {return 0;}
   /** Indicates start production. */
-  public int start_production() {return 1;}
+  public int start_production() {return 0;}
 
   /** <code>EOF</code> Symbol index. */
   public int EOF_sym() {return 0;}
@@ -98,10 +100,58 @@ public class Parser extends java_cup.runtime.lr_parser {
 
 
 
-    public static void main(String[] args) throws Exception {
-        Parser parser = new Parser(new Scanner(new java.io.FileReader(args[0])));
-        parser.parse();
+
+/***
+    private Scanner scanner;
+    public Parser(Scanner scanner) { 
+        this.scanner = scanner;
     }
+***/
+  
+
+
+
+  /**********************************************************************
+   * sobrecàrrega de mètodes per gestionar els errors que es localitzin *
+   **********************************************************************/
+
+  @Override
+  public void unrecovered_syntax_error(Symbol cur_token) throws Exception {
+    report_error("Error sintàctic catastròfic", cur_token);
+    done_parsing();    
+  }
+
+  @Override
+  public void syntax_error(Symbol cur_token) {
+    report_error("de sintaxis", cur_token);
+  }
+
+  @Override
+  public void report_error(String message, Object info) {
+    StringBuilder msg = new StringBuilder("ERROR");
+    if (info instanceof Symbol) {
+      ComplexSymbol token = (ComplexSymbol)info;
+      Location l = token.getLeft();
+      
+      if (l != null) {
+        msg.append(" (fila: ")
+          .append(l.getLine())
+          .append(", columna: ")
+          .append(l.getColumn())
+          .append(")");
+      }
+    }
+    msg.append(": ").append(message);
+    
+    System.err.println(msg);
+  }
+
+  @Override
+  public void report_fatal_error(String message, Object info) throws Exception {
+    report_error("Error catastròfic ("+message+")", info);
+    done_parsing();
+  }
+
 
 
 /** Cup generated class to encapsulate user supplied action code.*/
@@ -129,16 +179,7 @@ class CUP$Parser$actions {
       switch (CUP$Parser$act_num)
         {
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 0: // expr ::= expr PLUS expr 
-            {
-              Object RESULT =null;
-
-              CUP$Parser$result = parser.getSymbolFactory().newSymbol("expr",0, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
-            }
-          return CUP$Parser$result;
-
-          /*. . . . . . . . . . . . . . . . . . . .*/
-          case 1: // $START ::= expr EOF 
+          case 0: // $START ::= CodeStart EOF 
             {
               Object RESULT =null;
 		int start_valleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
@@ -152,20 +193,38 @@ class CUP$Parser$actions {
           return CUP$Parser$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 2: // expr ::= expr MINUS expr 
+          case 1: // CodeStart ::= Comando CodeStart 
             {
               Object RESULT =null;
 
-              CUP$Parser$result = parser.getSymbolFactory().newSymbol("expr",0, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("CodeStart",0, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 3: // expr ::= NUMBER 
+          case 2: // CodeStart ::= 
             {
               Object RESULT =null;
 
-              CUP$Parser$result = parser.getSymbolFactory().newSymbol("expr",0, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("CodeStart",0, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+            }
+          return CUP$Parser$result;
+
+          /*. . . . . . . . . . . . . . . . . . . .*/
+          case 3: // Comando ::= NUM PLUS NUM PCOMA 
+            {
+              Object RESULT =null;
+
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("Comando",1, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+            }
+          return CUP$Parser$result;
+
+          /*. . . . . . . . . . . . . . . . . . . .*/
+          case 4: // Comando ::= NUM MINUS NUM PCOMA 
+            {
+              Object RESULT =null;
+
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("Comando",1, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
 

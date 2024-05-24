@@ -6,19 +6,21 @@
 package com.grape.cup;
 
 /** CUP generated class containing symbol constants. */
-public class sym {
+public class ParserSym {
   /* terminals */
+  public static final int NUM = 2;
   public static final int error = 1;
-  public static final int PLUS = 2;
-  public static final int NUMBER = 4;
-  public static final int MINUS = 3;
+  public static final int PLUS = 3;
+  public static final int MINUS = 4;
+  public static final int PCOMA = 5;
   public static final int EOF = 0;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
+  "NUM",
   "PLUS",
   "MINUS",
-  "NUMBER"
+  "PCOMA"
   };
 }
 

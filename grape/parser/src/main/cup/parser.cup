@@ -1,29 +1,102 @@
 package com.grape.cup;
-// Importar las clases necesarias
-import java_cup.runtime.Symbol;
-import com.grape.core.*;
-import com.grape.cup.*;
-import com.grape.jflex.*;
+
+import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
+import java_cup.runtime.ComplexSymbolFactory.Location;
+
+import java_cup.runtime.*;
+
+import java.io.*;
+
+//Librerias
+
+class Parser;
 
 parser code {:
-    public static void main(String[] args) throws Exception {
-        Parser parser = new Parser(new Scanner(new java.io.FileReader(args[0])));
-        parser.parse();
+
+/***
+    private Scanner scanner;
+    public Parser(Scanner scanner) { 
+        this.scanner = scanner;
     }
+***/
+  
+
+
+
+  /**********************************************************************
+   * sobrecàrrega de mètodes per gestionar els errors que es localitzin *
+   **********************************************************************/
+
+  @Override
+  public void unrecovered_syntax_error(Symbol cur_token) throws Exception {
+    report_error("Error sintàctic catastròfic", cur_token);
+    done_parsing();    
+  }
+
+  @Override
+  public void syntax_error(Symbol cur_token) {
+    report_error("de sintaxis", cur_token);
+  }
+
+  @Override
+  public void report_error(String message, Object info) {
+    StringBuilder msg = new StringBuilder("ERROR");
+    if (info instanceof Symbol) {
+      ComplexSymbol token = (ComplexSymbol)info;
+      Location l = token.getLeft();
+      
+      if (l != null) {
+        msg.append(" (fila: ")
+          .append(l.getLine())
+          .append(", columna: ")
+          .append(l.getColumn())
+          .append(")");
+      }
+    }
+    msg.append(": ").append(message);
+    
+    System.err.println(msg);
+  }
+
+  @Override
+  public void report_fatal_error(String message, Object info) throws Exception {
+    report_error("Error catastròfic ("+message+")", info);
+    done_parsing();
+  }
+
 :}
 
-// Definir las terminales
-terminal PLUS, MINUS;
-terminal NUMBER;
 
-// Definir las no terminales
-non terminal expr;
+/**
+ ** També aquí es poden afegir accions a realitzar quan es requereix un token.
+scan with {:   next_token(); :}
+**/
 
-// Definir precedencia de operadores (opcional)
-precedence left PLUS, MINUS;
+/*Declaraciones Valores*/
+terminal Double NUM;
 
-// Reglas de producción
-expr ::= expr PLUS expr
-       | expr MINUS expr
-       | NUMBER
-       ;
+/*Declaraciones Operaciones*/
+terminal PLUS,MINUS;
+
+/*Declaraciones Especiales*/
+terminal PCOMA;
+
+non terminal CodeStart, Comando;
+
+//Precedencias Estandar
+// precedence right ASSIGN ;
+// precedence left AND, XOR, OR, NOT;
+// precedence left ADD, SUB ;
+// precedence left MUL, DIV, MOD ;
+// precedence left PADD, PSUB ;
+// precedence left LP,RP;
+
+start with CodeStart;
+
+CodeStart ::= Comando CodeStart
+            |  ;
+
+Comando ::= NUM PLUS NUM PCOMA
+          | NUM MINUS NUM PCOMA
+          ;
+

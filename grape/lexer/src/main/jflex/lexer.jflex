@@ -1,10 +1,12 @@
 package com.grape.jflex;
 
-import java.io.*;
+import com.grape.cup.*;
 
 import java_cup.runtime.*;
 import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
 import java_cup.runtime.ComplexSymbolFactory.Location;
+
+import java.io.*;
 
 %%
 
@@ -26,14 +28,18 @@ import java_cup.runtime.ComplexSymbolFactory.Location;
 
 //Que devolver al acabar el documento
 %eofval{
-   saveSymbol("EOF");
+   return symbol(ParserSym.EOF);
 %eofval}
     
-//Declaración de tokens
+//Declaración de tokens especiales
 
 comment_line = "//".*;
 ws = [ \t\n\r\f]+;
 endline = "\n";
+pcoma = ";";
+
+//Declaración de tokens
+number = [0-9]+;
 
 
 %{
@@ -41,35 +47,35 @@ endline = "\n";
     /**
      Construcció d'un symbol sense atribut associat.
      **/
-    // private ComplexSymbol symbol(int type) {
-    //     // Sumar 1 per a que la primera línia i columna no sigui 0.
-    //     Location esquerra = new Location(yyline+1, yycolumn+1);
-    //     Location dreta = new Location(yyline+1, yycolumn+yytext().length()+1);
+    private ComplexSymbol symbol(int type) {
+        // Sumar 1 per a que la primera línia i columna no sigui 0.
+        Location esquerra = new Location(yyline+1, yycolumn+1);
+        Location dreta = new Location(yyline+1, yycolumn+yytext().length()+1);
         
-    //     saveSymbol(type);
+        saveSymbol(type);
 
-    //     return new ComplexSymbol(ParserSym.terminalNames[type], type, esquerra, dreta);
-    // }
+        return new ComplexSymbol(ParserSym.terminalNames[type], type, esquerra, dreta);
+    }
 
     /**
      Construcció d'un symbol amb un atribut associat.
      **/
-    // private Symbol symbol(int type, Object value) {
-    //     // Sumar 1 per a que la primera línia i columna no sigui 0.
-    //     Location esquerra = new Location(yyline+1, yycolumn+1);
-    //     Location dreta = new Location(yyline+1, yycolumn+yytext().length()+1);
+    private Symbol symbol(int type, Object value) {
+        // Sumar 1 per a que la primera línia i columna no sigui 0.
+        Location esquerra = new Location(yyline+1, yycolumn+1);
+        Location dreta = new Location(yyline+1, yycolumn+yytext().length()+1);
 
-    //     saveSymbol(type);
+        saveSymbol(type);
 
-    //     // return new ComplexSymbol(ParserSym.terminalNames[type], type, esquerra, dreta, value);
-    // }
+        return new ComplexSymbol(ParserSym.terminalNames[type], type, esquerra, dreta, value);
+    }
 
 
-public void saveSymbol(String type) {
+public void saveSymbol(int type) {
 
     try {
         BufferedWriter writer = new BufferedWriter(new FileWriter("Lexico_Symbolos.txt", true));
-        writer.write("Symbol: " + type + "\n");
+        writer.write("Symbol: " + ParserSym.terminalNames[type] + "\n");
         writer.close();
     } catch (IOException e) {
         System.err.println("Error al escribir en el archivo LexicoSymbolos.txt");
@@ -80,8 +86,11 @@ public void saveSymbol(String type) {
 
 %%
 
-    {comment_line} {saveSymbol( "Comment Line");}
-    {ws} {saveSymbol("WS");}
-    {endline} {saveSymbol("EndLine");}
+    {number} {return symbol(ParserSym.NUM, yytext());}
 
-    [^] {saveSymbol("ERROR OTHER");}
+    {comment_line} {}
+    {ws} {}
+    {endline} {}
+    {pcoma} {return symbol(ParserSym.PCOMA);}
+
+    [^] {}

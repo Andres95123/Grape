@@ -82,12 +82,12 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.parent.basedir}/src/main/java/com/grape/cup</outputDirectory>
+                            <outputDirectory>../core/src/main/java/com/grape/</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.build.directory}/generated-sources/cup</directory>
+                                    <directory>${project.build.directory}/generated-sources/</directory>
                                     <includes>
-                                        <include>**/*</include>
+                                        <include>**/*.*</include>
                                     </includes>
                                 </resource>
                             </resources>
