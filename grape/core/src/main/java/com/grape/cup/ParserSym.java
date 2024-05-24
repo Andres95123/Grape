@@ -8,18 +8,36 @@ package com.grape.cup;
 /** CUP generated class containing symbol constants. */
 public class ParserSym {
   /* terminals */
-  public static final int NUM = 2;
-  public static final int error = 1;
-  public static final int PLUS = 3;
-  public static final int MINUS = 4;
-  public static final int Endline = 5;
+  public static final int MINUS = 9;
+  public static final int INFER_INVOKER = 7;
+  public static final int VAR_TYPE = 4;
+  public static final int DETERMINE = 5;
+  public static final int MOD = 12;
+  public static final int MULT = 10;
+  public static final int PLUS = 8;
   public static final int EOF = 0;
+  public static final int VALUE = 2;
+  public static final int Endline = 14;
+  public static final int DIV = 11;
+  public static final int ID = 3;
+  public static final int ASSIGN = 13;
+  public static final int error = 1;
+  public static final int VAR_INVOKER = 6;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
-  "NUM",
+  "VALUE",
+  "ID",
+  "VAR_TYPE",
+  "DETERMINE",
+  "VAR_INVOKER",
+  "INFER_INVOKER",
   "PLUS",
   "MINUS",
+  "MULT",
+  "DIV",
+  "MOD",
+  "ASSIGN",
   "Endline"
   };
 }

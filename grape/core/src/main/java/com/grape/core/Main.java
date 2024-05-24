@@ -1,6 +1,5 @@
 package com.grape.core;
 
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.FileReader;
 
@@ -15,14 +14,21 @@ public class Main {
     public static void main(String[] args) {
         Reader input = null;
 
+        // Borramos el archivo de salida
+        try {
+            new java.io.File("output.txt").delete();
+        } catch (Exception e) {
+            System.err.println("error: " + e);
+            e.printStackTrace(System.err);
+        }
+
         try {
             if (args.length > 0) {
                 input = new FileReader(args[0]);
             } else {
                 System.out.println("Introduce el nombre del archivo a compilar");
-
-                // input = new InputStreamReader(System.in);
-                input = new FileReader("c:\\Users\\andre\\OneDrive - Universitat de les Illes Balears\\APPS\\GIT\\Grape\\grape\\core\\src\\main\\java\\com\\grape\\data\\test.txt");
+                input = new FileReader(
+                        "c:\\Users\\andre\\OneDrive - Universitat de les Illes Balears\\APPS\\GIT\\Grape\\grape\\core\\src\\main\\java\\com\\grape\\data\\test.txt");
             }
 
             Scanner scanner = new Scanner(input);

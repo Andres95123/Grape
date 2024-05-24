@@ -9,6 +9,8 @@ import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import java_cup.runtime.*;
 import java.io.*;
+import com.grape.utils.*;
+import java.util.Stack;
 import java_cup.runtime.XMLElement;
 
 /** CUP v0.11b 20160615 (GIT 4ac7450) generated parser.
@@ -34,8 +36,9 @@ public class Parser extends java_cup.runtime.lr_parser {
   /** Production table. */
   protected static final short _production_table[][] = 
     unpackFromStrings(new String[] {
-    "\000\005\000\002\002\004\000\002\002\004\000\002\002" +
-    "\002\000\002\003\006\000\002\003\006" });
+    "\000\011\000\002\002\004\000\002\011\002\000\002\002" +
+    "\004\000\002\004\004\000\002\004\002\000\002\005\003" +
+    "\000\002\005\003\000\002\006\011\000\002\007\007" });
 
   /** Access to production table. */
   public short[][] production_table() {return _production_table;}
@@ -43,13 +46,19 @@ public class Parser extends java_cup.runtime.lr_parser {
   /** Parse-action table. */
   protected static final short[][] _action_table = 
     unpackFromStrings(new String[] {
-    "\000\014\000\006\002\uffff\004\004\001\002\000\006\005" +
-    "\011\006\012\001\002\000\004\002\010\001\002\000\006" +
-    "\002\uffff\004\004\001\002\000\004\002\000\001\002\000" +
-    "\004\002\001\001\002\000\004\004\015\001\002\000\004" +
-    "\004\013\001\002\000\004\007\014\001\002\000\006\002" +
-    "\ufffd\004\ufffd\001\002\000\004\007\016\001\002\000\006" +
-    "\002\ufffe\004\ufffe\001\002" });
+    "\000\025\000\010\002\000\010\000\011\000\001\002\000" +
+    "\004\002\027\001\002\000\010\002\ufffd\010\010\011\012" +
+    "\001\002\000\010\002\ufffb\010\ufffb\011\ufffb\001\002\000" +
+    "\010\002\ufffc\010\ufffc\011\ufffc\001\002\000\004\005\021" +
+    "\001\002\000\004\002\uffff\001\002\000\004\005\015\001" +
+    "\002\000\010\002\ufffd\010\010\011\012\001\002\000\004" +
+    "\002\ufffe\001\002\000\004\017\016\001\002\000\004\004" +
+    "\017\001\002\000\004\020\020\001\002\000\010\002\ufff9" +
+    "\010\ufff9\011\ufff9\001\002\000\004\007\022\001\002\000" +
+    "\004\006\023\001\002\000\004\017\024\001\002\000\004" +
+    "\004\025\001\002\000\004\020\026\001\002\000\010\002" +
+    "\ufffa\010\ufffa\011\ufffa\001\002\000\004\002\001\001\002" +
+    "" });
 
   /** Access to parse-action table. */
   public short[][] action_table() {return _action_table;}
@@ -57,11 +66,15 @@ public class Parser extends java_cup.runtime.lr_parser {
   /** <code>reduce_goto</code> table. */
   protected static final short[][] _reduce_table = 
     unpackFromStrings(new String[] {
-    "\000\014\000\006\002\004\003\005\001\001\000\002\001" +
-    "\001\000\002\001\001\000\006\002\006\003\005\001\001" +
+    "\000\025\000\006\002\003\011\004\001\001\000\002\001" +
+    "\001\000\012\004\010\005\012\006\006\007\005\001\001" +
+    "\000\002\001\001\000\002\001\001\000\002\001\001\000" +
+    "\002\001\001\000\002\001\001\000\012\004\013\005\012" +
+    "\006\006\007\005\001\001\000\002\001\001\000\002\001" +
+    "\001\000\002\001\001\000\002\001\001\000\002\001\001" +
     "\000\002\001\001\000\002\001\001\000\002\001\001\000" +
     "\002\001\001\000\002\001\001\000\002\001\001\000\002" +
-    "\001\001\000\002\001\001" });
+    "\001\001" });
 
   /** Access to <code>reduce_goto</code> table. */
   public short[][] reduce_table() {return _reduce_table;}
@@ -108,6 +121,9 @@ public class Parser extends java_cup.runtime.lr_parser {
     }
 ***/
   
+  // Estructuras de datos para almacenar los errores
+
+  Stack<Bloque> pilaBloques = new Stack<>();
 
 
 
@@ -117,7 +133,7 @@ public class Parser extends java_cup.runtime.lr_parser {
 
   @Override
   public void unrecovered_syntax_error(Symbol cur_token) throws Exception {
-    report_error("Error sintàctic catastròfic", cur_token);
+    report_error("Error de sintaxis catastrofico", cur_token);
     done_parsing();    
   }
 
@@ -148,13 +164,10 @@ public class Parser extends java_cup.runtime.lr_parser {
 
   @Override
   public void report_fatal_error(String message, Object info) throws Exception {
-    report_error("Error catastròfic ("+message+")", info);
+    report_error("Error catastrofico irrecuperable ("+message+")", info);
     done_parsing();
   }
 
-  public void escribir(String s) {
-    System.out.println(s);
-  }
 
 
 
@@ -183,7 +196,7 @@ class CUP$Parser$actions {
       switch (CUP$Parser$act_num)
         {
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 0: // $START ::= CodeStart EOF 
+          case 0: // $START ::= CODESTART EOF 
             {
               Object RESULT =null;
 		int start_valleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
@@ -197,38 +210,104 @@ class CUP$Parser$actions {
           return CUP$Parser$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 1: // CodeStart ::= Comando CodeStart 
+          case 1: // NT$0 ::= 
             {
               Object RESULT =null;
-
-              CUP$Parser$result = parser.getSymbolFactory().newSymbol("CodeStart",0, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+ pilaBloques.push(new Bloque()); 
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("NT$0",7, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 2: // CodeStart ::= 
+          case 2: // CODESTART ::= NT$0 COMANDOS 
             {
               Object RESULT =null;
-
-              CUP$Parser$result = parser.getSymbolFactory().newSymbol("CodeStart",0, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+              // propagate RESULT from NT$0
+                RESULT = (Object) ((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
+		 for(Bloque bloque : pilaBloques){
+  System.out.println(bloque.toString());
+} 
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("CODESTART",0, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 3: // Comando ::= NUM PLUS NUM Endline 
+          case 3: // COMANDOS ::= VARIABLE_DEFINITION COMANDOS 
             {
               Object RESULT =null;
-		escribir("Suma");
-              CUP$Parser$result = parser.getSymbolFactory().newSymbol("Comando",1, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("COMANDOS",2, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 4: // Comando ::= NUM MINUS NUM Endline 
+          case 4: // COMANDOS ::= 
             {
               Object RESULT =null;
-		escribir("Resta") ;
-              CUP$Parser$result = parser.getSymbolFactory().newSymbol("Comando",1, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("COMANDOS",2, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+            }
+          return CUP$Parser$result;
+
+          /*. . . . . . . . . . . . . . . . . . . .*/
+          case 5: // VARIABLE_DEFINITION ::= VAR_DEFINITION 
+            {
+              Object RESULT =null;
+
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("VARIABLE_DEFINITION",3, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+            }
+          return CUP$Parser$result;
+
+          /*. . . . . . . . . . . . . . . . . . . .*/
+          case 6: // VARIABLE_DEFINITION ::= INFER_DEFINITION 
+            {
+              Object RESULT =null;
+
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("VARIABLE_DEFINITION",3, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+            }
+          return CUP$Parser$result;
+
+          /*. . . . . . . . . . . . . . . . . . . .*/
+          case 7: // VAR_DEFINITION ::= VAR_INVOKER ID DETERMINE VAR_TYPE ASSIGN VALUE Endline 
+            {
+              Object RESULT =null;
+		int nameleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-5)).left;
+		int nameright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-5)).right;
+		String name = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-5)).value;
+		int tipeleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).left;
+		int tiperight = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).right;
+		Tipo tipe = (Tipo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-3)).value;
+		int valleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
+		int valright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
+		ValueContainer val = (ValueContainer)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
+		
+
+  if (!val.isType(tipe)){
+    report_fatal_error (name + " no es de tipo " + val.getType(), val);
+  }
+
+ pilaBloques.peek().addVar(name,tipe,val.getValue()); 
+ 
+ 
+ 
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("VAR_DEFINITION",4, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-6)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+            }
+          return CUP$Parser$result;
+
+          /*. . . . . . . . . . . . . . . . . . . .*/
+          case 8: // INFER_DEFINITION ::= INFER_INVOKER ID ASSIGN VALUE Endline 
+            {
+              Object RESULT =null;
+		int nameleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).left;
+		int nameright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).right;
+		String name = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-3)).value;
+		int valleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
+		int valright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
+		ValueContainer val = (ValueContainer)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
+		
+  pilaBloques.peek().addVar(name,val.getType(),val.getValue());
+  
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("INFER_DEFINITION",5, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
 

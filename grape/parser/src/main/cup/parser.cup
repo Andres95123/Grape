@@ -7,7 +7,10 @@ import java_cup.runtime.*;
 
 import java.io.*;
 
+import com.grape.utils.*;
+
 //Librerias
+import java.util.Stack;
 
 class Parser;
 
@@ -20,6 +23,9 @@ parser code {:
     }
 ***/
   
+  // Estructuras de datos para almacenar los errores
+
+  Stack<Bloque> pilaBloques = new Stack<>();
 
 
 
@@ -29,7 +35,7 @@ parser code {:
 
   @Override
   public void unrecovered_syntax_error(Symbol cur_token) throws Exception {
-    report_error("Error sintàctic catastròfic", cur_token);
+    report_error("Error de sintaxis catastrofico", cur_token);
     done_parsing();    
   }
 
@@ -60,13 +66,10 @@ parser code {:
 
   @Override
   public void report_fatal_error(String message, Object info) throws Exception {
-    report_error("Error catastròfic ("+message+")", info);
+    report_error("Error catastrofico irrecuperable ("+message+")", info);
     done_parsing();
   }
 
-  public void escribir(String s) {
-    System.out.println(s);
-  }
 
 :}
 
@@ -77,15 +80,20 @@ scan with {:   next_token(); :}
 **/
 
 /*Declaraciones Valores*/
-terminal Double NUM;
+terminal ValueContainer VALUE;
+terminal String ID;
+
+/*Declaracion Tipos*/
+terminal Tipo VAR_TYPE;
+terminal DETERMINE,VAR_INVOKER, INFER_INVOKER;
 
 /*Declaraciones Operaciones*/
-terminal PLUS,MINUS;
+terminal PLUS,MINUS,MULT,DIV,MOD,ASSIGN;
 
 /*Declaraciones Especiales*/
 terminal Endline;
 
-non terminal CodeStart, Comando;
+non terminal CODESTART, START_ACTIONS, COMANDOS, VARIABLE_DEFINITION, VAR_DEFINITION, INFER_DEFINITION, TYPE_SELECTOR;
 
 //Precedencias Estandar
 // precedence right ASSIGN ;
@@ -95,12 +103,33 @@ non terminal CodeStart, Comando;
 // precedence left PADD, PSUB ;
 // precedence left LP,RP;
 
-start with CodeStart;
+start with CODESTART;
 
-CodeStart ::= Comando CodeStart
-            |  ;
+// Inicio de la gramatica
 
-Comando ::= NUM PLUS NUM Endline {:escribir("Suma");:}
-          | NUM MINUS NUM Endline {:escribir("Resta") ;:}
-          ;
+CODESTART ::= {: pilaBloques.push(new Bloque()); :} COMANDOS {: for(Bloque bloque : pilaBloques){
+  System.out.println(bloque.toString());
+} :} ;
+
+COMANDOS ::= VARIABLE_DEFINITION COMANDOS |   ;
+
+VARIABLE_DEFINITION ::= VAR_DEFINITION | INFER_DEFINITION ;
+
+// Definicion de variables
+
+VAR_DEFINITION ::= VAR_INVOKER ID:name DETERMINE VAR_TYPE:tipe ASSIGN VALUE:val Endline {:
+
+  if (!val.isType(tipe)){
+    report_fatal_error (name + " no es de tipo " + val.getType(), val);
+  }
+
+ pilaBloques.peek().addVar(name,tipe,val.getValue()); 
+
+:} ;
+
+ INFER_DEFINITION ::= INFER_INVOKER ID:name ASSIGN VALUE:val Endline {:
+
+  pilaBloques.peek().addVar(name,val.getType(),val.getValue());
+
+:} ;
 

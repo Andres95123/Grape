@@ -11,6 +11,7 @@ import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 
 import java.io.*;
+import com.grape.utils.*;
 
 
 @SuppressWarnings("fallthrough")
@@ -69,9 +70,13 @@ public class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
 
   private static final String ZZ_CMAP_BLOCKS_PACKED_0 =
-    "\11\0\2\1\2\0\1\1\22\0\1\1\6\0\1\1"+
-    "\3\0\1\2\1\0\1\3\2\0\12\4\1\0\1\5"+
-    "\100\0\1\1\u0183\0";
+    "\11\0\2\1\2\0\1\1\22\0\1\1\1\0\1\2"+
+    "\2\0\1\3\1\0\1\1\2\0\1\4\1\5\1\0"+
+    "\1\6\1\7\1\10\12\11\1\12\1\13\1\0\1\14"+
+    "\3\0\32\15\1\0\1\16\4\0\1\17\1\20\1\21"+
+    "\1\15\1\22\1\23\1\24\1\25\1\26\2\15\1\27"+
+    "\1\15\1\30\1\31\2\15\1\32\1\33\1\34\1\35"+
+    "\1\36\4\15\1\0\1\1\u0183\0";
 
   private static int [] zzUnpackcmap_blocks() {
     int [] result = new int[512];
@@ -98,10 +103,14 @@ public class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\1\0\1\1\1\2\1\3\1\4\1\5\1\6";
+    "\1\0\1\1\1\2\1\1\1\3\1\4\1\5\1\6"+
+    "\1\7\1\10\1\11\1\12\1\13\1\14\1\1\7\14"+
+    "\1\0\1\15\1\0\1\16\7\14\1\10\4\14\1\17"+
+    "\2\14\1\20\1\21\1\22\3\14\1\23\1\24\1\25"+
+    "\1\14\1\26";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[7];
+    int [] result = new int[52];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -126,10 +135,16 @@ public class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\6\0\14\0\6\0\6\0\22\0\6";
+    "\0\0\0\37\0\76\0\135\0\37\0\37\0\37\0\174"+
+    "\0\37\0\233\0\37\0\37\0\37\0\272\0\331\0\370"+
+    "\0\u0117\0\u0136\0\u0155\0\u0174\0\u0193\0\u01b2\0\135\0\37"+
+    "\0\u01d1\0\37\0\u01f0\0\u020f\0\u022e\0\u024d\0\u026c\0\u028b"+
+    "\0\u02aa\0\u01d1\0\u02c9\0\u02e8\0\u0307\0\u0326\0\272\0\u0345"+
+    "\0\u0364\0\272\0\272\0\272\0\u0383\0\u03a2\0\u03c1\0\272"+
+    "\0\272\0\272\0\u03e0\0\272";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[7];
+    int [] result = new int[52];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -152,11 +167,39 @@ public class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_TRANS = zzUnpacktrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-    "\1\2\1\3\1\4\1\5\1\6\1\7\7\0\1\3"+
-    "\10\0\1\6\1\0";
+    "\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\2"+
+    "\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\16"+
+    "\1\20\1\21\1\16\1\22\2\16\1\23\4\16\1\24"+
+    "\1\25\1\16\1\26\40\0\1\3\35\0\2\27\1\30"+
+    "\34\27\11\0\1\12\34\0\1\31\1\0\1\12\36\0"+
+    "\1\16\3\0\1\16\1\0\20\16\37\32\11\0\1\16"+
+    "\3\0\1\16\1\0\12\16\1\33\5\16\11\0\1\16"+
+    "\3\0\1\16\1\0\6\16\1\34\11\16\11\0\1\16"+
+    "\3\0\1\16\1\0\1\35\17\16\11\0\1\16\3\0"+
+    "\1\16\1\0\11\16\1\36\6\16\11\0\1\16\3\0"+
+    "\1\16\1\0\15\16\1\37\2\16\11\0\1\16\3\0"+
+    "\1\16\1\0\13\16\1\40\4\16\11\0\1\16\3\0"+
+    "\1\16\1\0\1\41\17\16\11\0\1\42\36\0\1\16"+
+    "\3\0\1\16\1\0\12\16\1\43\5\16\11\0\1\16"+
+    "\3\0\1\16\1\0\1\44\17\16\11\0\1\16\3\0"+
+    "\1\16\1\0\10\16\1\45\7\16\11\0\1\16\3\0"+
+    "\1\16\1\0\4\16\1\46\10\16\1\47\2\16\11\0"+
+    "\1\16\3\0\1\16\1\0\13\16\1\50\4\16\11\0"+
+    "\1\16\3\0\1\16\1\0\16\16\1\51\1\16\11\0"+
+    "\1\16\3\0\1\16\1\0\13\16\1\52\4\16\11\0"+
+    "\1\16\3\0\1\16\1\0\10\16\1\53\7\16\11\0"+
+    "\1\16\3\0\1\16\1\0\13\16\1\54\4\16\11\0"+
+    "\1\16\3\0\1\16\1\0\14\16\1\55\3\16\11\0"+
+    "\1\16\3\0\1\16\1\0\3\16\1\56\14\16\11\0"+
+    "\1\16\3\0\1\16\1\0\7\16\1\57\10\16\11\0"+
+    "\1\16\3\0\1\16\1\0\3\16\1\60\14\16\11\0"+
+    "\1\16\3\0\1\16\1\0\3\16\1\61\14\16\11\0"+
+    "\1\16\3\0\1\16\1\0\13\16\1\62\4\16\11\0"+
+    "\1\16\3\0\1\16\1\0\11\16\1\63\6\16\11\0"+
+    "\1\16\3\0\1\16\1\0\5\16\1\64\12\16";
 
   private static int [] zzUnpacktrans() {
-    int [] result = new int[24];
+    int [] result = new int[1023];
     int offset = 0;
     offset = zzUnpacktrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -199,10 +242,11 @@ public class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\1\0\1\11\1\1\2\11\1\1\1\11";
+    "\1\0\1\11\2\1\3\11\1\1\1\11\1\1\3\11"+
+    "\11\1\1\0\1\11\1\0\1\11\32\1";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[7];
+    int [] result = new int[52];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -295,6 +339,16 @@ public class Scanner implements java_cup.runtime.Scanner {
     /**
      Construcció d'un symbol amb un atribut associat.
      **/
+    private Symbol symbol(int type, Object value, Tipo tipoReal) {
+        // Sumar 1 per a que la primera línia i columna no sigui 0.
+        Location esquerra = new Location(yyline+1, yycolumn+1);
+        Location dreta = new Location(yyline+1, yycolumn+yytext().length()+1);
+
+        saveSymbol(type);
+
+        return new ComplexSymbol(ParserSym.terminalNames[type], type, esquerra, dreta, new ValueContainer(value,tipoReal));
+    }
+
     private Symbol symbol(int type, Object value) {
         // Sumar 1 per a que la primera línia i columna no sigui 0.
         Location esquerra = new Location(yyline+1, yycolumn+1);
@@ -309,11 +363,11 @@ public class Scanner implements java_cup.runtime.Scanner {
 public void saveSymbol(int type) {
 
     try {
-        BufferedWriter writer = new BufferedWriter(new FileWriter("Lexico_Symbolos.txt", true));
+        BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt", true));
         writer.write("Symbol: " + ParserSym.terminalNames[type] + "\n");
         writer.close();
     } catch (IOException e) {
-        System.err.println("Error al escribir en el archivo LexicoSymbolos.txt");
+        System.err.println("Error al escribir en el archivo output.txt");
     }
 }
 
@@ -749,32 +803,112 @@ public void saveSymbol(int type) {
             { return symbol(ParserSym.error);
             }
           // fall through
-          case 7: break;
+          case 23: break;
           case 2:
             { 
             }
           // fall through
-          case 8: break;
+          case 24: break;
           case 3:
+            { return symbol(ParserSym.MOD);
+            }
+          // fall through
+          case 25: break;
+          case 4:
+            { return symbol(ParserSym.MULT);
+            }
+          // fall through
+          case 26: break;
+          case 5:
             { return symbol(ParserSym.PLUS);
             }
           // fall through
-          case 9: break;
-          case 4:
+          case 27: break;
+          case 6:
             { return symbol(ParserSym.MINUS);
             }
           // fall through
-          case 10: break;
-          case 5:
-            { return symbol(ParserSym.NUM, yytext());
+          case 28: break;
+          case 7:
+            { return symbol(ParserSym.DIV);
             }
           // fall through
-          case 11: break;
-          case 6:
+          case 29: break;
+          case 8:
+            { return symbol(ParserSym.VALUE, Double.parseDouble(yytext()), Tipo.INT);
+            }
+          // fall through
+          case 30: break;
+          case 9:
+            { return symbol(ParserSym.DETERMINE);
+            }
+          // fall through
+          case 31: break;
+          case 10:
             { return symbol(ParserSym.Endline);
             }
           // fall through
-          case 12: break;
+          case 32: break;
+          case 11:
+            { return symbol(ParserSym.ASSIGN);
+            }
+          // fall through
+          case 33: break;
+          case 12:
+            { return symbol(ParserSym.ID, yytext());
+            }
+          // fall through
+          case 34: break;
+          case 13:
+            { return symbol(ParserSym.VALUE, yytext().substring(1, yytext().length()-1), Tipo.STRING);
+            }
+          // fall through
+          case 35: break;
+          case 14:
+            { return symbol(ParserSym.VALUE, yytext().charAt(1), Tipo.CHAR);
+            }
+          // fall through
+          case 36: break;
+          case 15:
+            { return symbol(ParserSym.VAR_TYPE, Tipo.INT);
+            }
+          // fall through
+          case 37: break;
+          case 16:
+            { return symbol(ParserSym.VAR_INVOKER);
+            }
+          // fall through
+          case 38: break;
+          case 17:
+            { return symbol(ParserSym.VAR_TYPE, Tipo.BOOL);
+            }
+          // fall through
+          case 39: break;
+          case 18:
+            { return symbol(ParserSym.VAR_TYPE, Tipo.CHAR);
+            }
+          // fall through
+          case 40: break;
+          case 19:
+            { return symbol(ParserSym.VALUE, true, Tipo.BOOL);
+            }
+          // fall through
+          case 41: break;
+          case 20:
+            { return symbol(ParserSym.VALUE, false, Tipo.BOOL);
+            }
+          // fall through
+          case 42: break;
+          case 21:
+            { return symbol(ParserSym.INFER_INVOKER);
+            }
+          // fall through
+          case 43: break;
+          case 22:
+            { return symbol(ParserSym.VAR_TYPE, Tipo.STRING);
+            }
+          // fall through
+          case 44: break;
           default:
             zzScanError(ZZ_NO_MATCH);
         }

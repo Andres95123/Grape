@@ -1,0 +1,7 @@
+Symbol: INFER_INVOKER
+Symbol: ID
+Symbol: ASSIGN
+Symbol: VALUE
+Symbol: Endline
+Symbol: EOF
+Symbol: EOF
