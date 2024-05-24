@@ -33,13 +33,13 @@ import java.io.*;
     
 //Declaración de tokens especiales
 
-comment_line = "//".*;
-ws = [ \t\n\r\f]+;
-endline = "\n";
-pcoma = ";";
+ws = [' '|'\t'|'\r'|'\n'|"\r\n"]+
+endline = ";"
 
 //Declaración de tokens
-number = [0-9]+;
+number = [0-9]+
+plus = "+"
+minus = "-"
 
 
 %{
@@ -87,10 +87,10 @@ public void saveSymbol(int type) {
 %%
 
     {number} {return symbol(ParserSym.NUM, yytext());}
+    {plus} {return symbol(ParserSym.PLUS);}
+    {minus} {return symbol(ParserSym.MINUS);}
 
-    {comment_line} {}
     {ws} {}
-    {endline} {}
-    {pcoma} {return symbol(ParserSym.PCOMA);}
+    {endline} {return symbol(ParserSym.Endline);}
 
-    [^] {}
+    [^] {return symbol(ParserSym.error);}

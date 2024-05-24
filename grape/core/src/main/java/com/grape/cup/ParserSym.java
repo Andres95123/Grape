@@ -12,7 +12,7 @@ public class ParserSym {
   public static final int error = 1;
   public static final int PLUS = 3;
   public static final int MINUS = 4;
-  public static final int PCOMA = 5;
+  public static final int Endline = 5;
   public static final int EOF = 0;
   public static final String[] terminalNames = new String[] {
   "EOF",
@@ -20,7 +20,7 @@ public class ParserSym {
   "NUM",
   "PLUS",
   "MINUS",
-  "PCOMA"
+  "Endline"
   };
 }
 

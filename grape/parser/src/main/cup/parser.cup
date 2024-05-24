@@ -64,6 +64,10 @@ parser code {:
     done_parsing();
   }
 
+  public void escribir(String s) {
+    System.out.println(s);
+  }
+
 :}
 
 
@@ -79,7 +83,7 @@ terminal Double NUM;
 terminal PLUS,MINUS;
 
 /*Declaraciones Especiales*/
-terminal PCOMA;
+terminal Endline;
 
 non terminal CodeStart, Comando;
 
@@ -96,7 +100,7 @@ start with CodeStart;
 CodeStart ::= Comando CodeStart
             |  ;
 
-Comando ::= NUM PLUS NUM PCOMA
-          | NUM MINUS NUM PCOMA
+Comando ::= NUM PLUS NUM Endline {:escribir("Suma");:}
+          | NUM MINUS NUM Endline {:escribir("Resta") ;:}
           ;
 

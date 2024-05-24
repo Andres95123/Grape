@@ -152,6 +152,10 @@ public class Parser extends java_cup.runtime.lr_parser {
     done_parsing();
   }
 
+  public void escribir(String s) {
+    System.out.println(s);
+  }
+
 
 
 /** Cup generated class to encapsulate user supplied action code.*/
@@ -211,19 +215,19 @@ class CUP$Parser$actions {
           return CUP$Parser$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 3: // Comando ::= NUM PLUS NUM PCOMA 
+          case 3: // Comando ::= NUM PLUS NUM Endline 
             {
               Object RESULT =null;
-
+		escribir("Suma");
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("Comando",1, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 4: // Comando ::= NUM MINUS NUM PCOMA 
+          case 4: // Comando ::= NUM MINUS NUM Endline 
             {
               Object RESULT =null;
-
+		escribir("Resta") ;
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("Comando",1, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;

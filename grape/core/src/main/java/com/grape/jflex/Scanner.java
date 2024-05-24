@@ -41,7 +41,7 @@ public class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_CMAP_TOP = zzUnpackcmap_top();
 
   private static final String ZZ_CMAP_TOP_PACKED_0 =
-    "\1\0\37\u0100\1\u0200\267\u0100\10\u0300\u1020\u0100";
+    "\1\0\u10ff\u0100";
 
   private static int [] zzUnpackcmap_top() {
     int [] result = new int[4352];
@@ -69,12 +69,12 @@ public class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
 
   private static final String ZZ_CMAP_BLOCKS_PACKED_0 =
-    "\11\0\1\1\1\2\1\3\2\2\22\0\1\1\16\0"+
-    "\1\4\12\5\1\0\1\6\111\0\1\3\u01a2\0\2\3"+
-    "\326\0\u0100\3";
+    "\11\0\2\1\2\0\1\1\22\0\1\1\6\0\1\1"+
+    "\3\0\1\2\1\0\1\3\2\0\12\4\1\0\1\5"+
+    "\100\0\1\1\u0183\0";
 
   private static int [] zzUnpackcmap_blocks() {
-    int [] result = new int[1024];
+    int [] result = new int[512];
     int offset = 0;
     offset = zzUnpackcmap_blocks(ZZ_CMAP_BLOCKS_PACKED_0, offset, result);
     return result;
@@ -98,10 +98,10 @@ public class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\1\0\5\1\3\0\1\2\1\3\1\1";
+    "\1\0\1\1\1\2\1\3\1\4\1\5\1\6";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[12];
+    int [] result = new int[7];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -126,11 +126,10 @@ public class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\7\0\16\0\25\0\34\0\43\0\16\0\52"+
-    "\0\34\0\7\0\7\0\52";
+    "\0\0\0\6\0\14\0\6\0\6\0\22\0\6";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[12];
+    int [] result = new int[7];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -153,12 +152,11 @@ public class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_TRANS = zzUnpacktrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-    "\1\2\2\3\1\2\1\4\1\5\1\6\10\0\2\7"+
-    "\3\0\1\2\4\0\1\10\7\0\1\11\1\12\6\0"+
-    "\1\13\2\10\2\0\2\10\1\14";
+    "\1\2\1\3\1\4\1\5\1\6\1\7\7\0\1\3"+
+    "\10\0\1\6\1\0";
 
   private static int [] zzUnpacktrans() {
-    int [] result = new int[49];
+    int [] result = new int[24];
     int offset = 0;
     offset = zzUnpacktrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -201,10 +199,10 @@ public class Scanner implements java_cup.runtime.Scanner {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\1\0\1\11\4\1\3\0\2\11\1\1";
+    "\1\0\1\11\1\1\2\11\1\1\1\11";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[12];
+    int [] result = new int[7];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -748,20 +746,35 @@ public void saveSymbol(int type) {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1:
+            { return symbol(ParserSym.error);
+            }
+          // fall through
+          case 7: break;
+          case 2:
             { 
             }
           // fall through
-          case 4: break;
-          case 2:
+          case 8: break;
+          case 3:
+            { return symbol(ParserSym.PLUS);
+            }
+          // fall through
+          case 9: break;
+          case 4:
+            { return symbol(ParserSym.MINUS);
+            }
+          // fall through
+          case 10: break;
+          case 5:
             { return symbol(ParserSym.NUM, yytext());
             }
           // fall through
-          case 5: break;
-          case 3:
-            { return symbol(ParserSym.PCOMA);
+          case 11: break;
+          case 6:
+            { return symbol(ParserSym.Endline);
             }
           // fall through
-          case 6: break;
+          case 12: break;
           default:
             zzScanError(ZZ_NO_MATCH);
         }
