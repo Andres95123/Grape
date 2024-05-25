@@ -85,7 +85,7 @@ terminal String ID;
 
 /*Declaracion Tipos*/
 terminal Tipo VAR_TYPE;
-terminal DETERMINE,VAR_INVOKER, INFER_INVOKER;
+terminal DETERMINE,VAR_INVOKER, INFER_INVOKER, FIX_INVOKER;
 
 /*Declaraciones Operaciones*/
 terminal PLUS,MINUS,MULT,DIV,MOD,ASSIGN;
@@ -94,7 +94,7 @@ terminal PLUS,MINUS,MULT,DIV,MOD,ASSIGN;
 terminal Endline;
 
 non terminal CODESTART, START_ACTIONS, COMANDOS, VARIABLE_DEFINITION, VAR_DEFINITION, INFER_DEFINITION, TYPE_SELECTOR;
-non terminal ValueContainer EXPRESION;
+non terminal Var EXPRESION;
 
 //Precedencias Estandar
 precedence right ASSIGN ;
@@ -106,9 +106,18 @@ start with CODESTART;
 
 // Inicio de la gramatica
 
-CODESTART ::= {: pilaBloques.push(new Bloque()); :} COMANDOS {: for(Bloque bloque : pilaBloques){
+CODESTART ::= {: pilaBloques.push(new Bloque()); :} COMANDOS 
+{: 
+for(Bloque bloque : pilaBloques){
   System.out.println(bloque.toString());
-} :} ;
+} 
+
+for(IR ir : IR.irDeque){
+  System.out.println(ir.toString());
+}
+
+
+:} ;
 
 COMANDOS ::= VARIABLE_DEFINITION COMANDOS |   ;
 
@@ -122,21 +131,21 @@ VAR_DEFINITION ::= VAR_INVOKER ID:name DETERMINE VAR_TYPE:tipe ASSIGN EXPRESION:
     report_fatal_error (name + " no es de tipo " + val.getType(), val);
   }
 
- pilaBloques.peek().addVar(name,tipe,val.getValue()); 
+ pilaBloques.peek().addVar(name,val); 
 
 :} ;
 
 INFER_DEFINITION ::= INFER_INVOKER ID:name ASSIGN EXPRESION:val Endline {:
 
-  pilaBloques.peek().addVar(name,val.getType(),val.getValue());
+  pilaBloques.peek().addVar(name,val);
 
-:} ;
+:};
 
 
-EXPRESION ::= VALUE:val {: RESULT = val; :} 
-| EXPRESION:e1 PLUS EXPRESION:e2 {: RESULT = e1.sumar(e2); :}
-| EXPRESION:e1 MINUS EXPRESION:e2 {: RESULT = e1.restar(e2); :}
-| EXPRESION:e1 MULT EXPRESION:e2 {: RESULT = e1.multiplicar(e2); :}
-| EXPRESION:e1 DIV EXPRESION:e2 {: RESULT = e1.dividir(e2); :}
-| EXPRESION:e1 MOD EXPRESION:e2 {: RESULT = e1.modulo(e2); :};
+EXPRESION ::= VALUE:val {: RESULT = new Var(val.getType(),val.getValue(),true); :} | ID:val {: RESULT = pilaBloques.peek().getVar(val); :}
+| EXPRESION:e1 PLUS EXPRESION:e2 {: Var tmp = e1.sumar(e2); pilaBloques.peek().addVar(tmp.getNombre(),tmp); RESULT = tmp; :}
+| EXPRESION:e1 MINUS EXPRESION:e2 {: Var tmp = e1.restar(e2); pilaBloques.peek().addVar(tmp.getNombre(),tmp); RESULT = tmp; :}
+| EXPRESION:e1 MULT EXPRESION:e2 {: Var tmp = e1.multiplicar(e2); pilaBloques.peek().addVar(tmp.getNombre(),tmp); RESULT = tmp; :}
+| EXPRESION:e1 DIV EXPRESION:e2 {: Var tmp = e1.dividir(e2); pilaBloques.peek().addVar(tmp.getNombre(),tmp); RESULT = tmp; :}
+| EXPRESION:e1 MOD EXPRESION:e2 {: Var tmp = e1.modulo(e2); pilaBloques.peek().addVar(tmp.getNombre(),tmp); RESULT = tmp; :};
 

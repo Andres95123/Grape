@@ -77,6 +77,7 @@ string_type = "string"
 // Textos necesarios
 var = "var"
 infer = "infer"
+fix = "fix"
 
 
 %{
@@ -164,6 +165,7 @@ public void saveSymbol(int type) {
     // Textos
     {var} {return symbol(ParserSym.VAR_INVOKER);}
     {infer} {return symbol(ParserSym.INFER_INVOKER);}
+    {fix} {return symbol(ParserSym.FIX_INVOKER);}
 
     {id} {return symbol(ParserSym.ID, yytext());}
 

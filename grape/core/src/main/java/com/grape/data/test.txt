@@ -1,3 +1,5 @@
 infer PI = 3.1416;
 infer r = 5.0*3;
+var myvar : int = 5+5;
 infer text = "Hello, World!" + " jeje" + " hola" + " mundo" + "1";
+infer T = PI + r + 55;

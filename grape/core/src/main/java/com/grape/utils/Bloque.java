@@ -17,16 +17,17 @@ public class Bloque {
         }
     }
 
-    public void addVar(String nombre, Tipo tipo, Object valor) {
-        vars.put(nombre, new Var(tipo, nombre, valor));
+    public void addVar(String nombre, Var var) {
+        vars.put(nombre, var);
     }
 
     public Var getVar(String nombre) {
-        return vars.get(nombre);
-    }
 
-    public boolean existeVar(String nombre) {
-        return vars.containsKey(nombre);
+        if (!vars.containsKey(nombre)) {
+            throw new RuntimeException("Variable " + nombre + " no definida");
+        }
+
+        return vars.get(nombre);
     }
 
     @Override
