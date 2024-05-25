@@ -94,14 +94,13 @@ terminal PLUS,MINUS,MULT,DIV,MOD,ASSIGN;
 terminal Endline;
 
 non terminal CODESTART, START_ACTIONS, COMANDOS, VARIABLE_DEFINITION, VAR_DEFINITION, INFER_DEFINITION, TYPE_SELECTOR;
+non terminal ValueContainer EXPRESION;
 
 //Precedencias Estandar
-// precedence right ASSIGN ;
+precedence right ASSIGN ;
 // precedence left AND, XOR, OR, NOT;
-// precedence left ADD, SUB ;
-// precedence left MUL, DIV, MOD ;
-// precedence left PADD, PSUB ;
-// precedence left LP,RP;
+precedence left PLUS,MINUS ;
+precedence left MULT, DIV, MOD ;
 
 start with CODESTART;
 
@@ -117,7 +116,7 @@ VARIABLE_DEFINITION ::= VAR_DEFINITION | INFER_DEFINITION ;
 
 // Definicion de variables
 
-VAR_DEFINITION ::= VAR_INVOKER ID:name DETERMINE VAR_TYPE:tipe ASSIGN VALUE:val Endline {:
+VAR_DEFINITION ::= VAR_INVOKER ID:name DETERMINE VAR_TYPE:tipe ASSIGN EXPRESION:val Endline {:
 
   if (!val.isType(tipe)){
     report_fatal_error (name + " no es de tipo " + val.getType(), val);
@@ -127,9 +126,17 @@ VAR_DEFINITION ::= VAR_INVOKER ID:name DETERMINE VAR_TYPE:tipe ASSIGN VALUE:val 
 
 :} ;
 
- INFER_DEFINITION ::= INFER_INVOKER ID:name ASSIGN VALUE:val Endline {:
+INFER_DEFINITION ::= INFER_INVOKER ID:name ASSIGN EXPRESION:val Endline {:
 
   pilaBloques.peek().addVar(name,val.getType(),val.getValue());
 
 :} ;
+
+
+EXPRESION ::= VALUE:val {: RESULT = val; :} 
+| EXPRESION:e1 PLUS EXPRESION:e2 {: RESULT = e1.sumar(e2); :}
+| EXPRESION:e1 MINUS EXPRESION:e2 {: RESULT = e1.restar(e2); :}
+| EXPRESION:e1 MULT EXPRESION:e2 {: RESULT = e1.multiplicar(e2); :}
+| EXPRESION:e1 DIV EXPRESION:e2 {: RESULT = e1.dividir(e2); :}
+| EXPRESION:e1 MOD EXPRESION:e2 {: RESULT = e1.modulo(e2); :};
 
