@@ -21,4 +21,8 @@ public class ValueContainer {
         return this.type == type;
     }
 
+    public void changeType(Tipo type) {
+        this.type = type;
+    }
+
 }

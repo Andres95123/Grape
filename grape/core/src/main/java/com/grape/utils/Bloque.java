@@ -3,36 +3,24 @@ package com.grape.utils;
 import java.util.HashMap;
 
 public class Bloque {
-
-    HashMap<String, Var> vars;
+    HashMap<String, Tipo> variables;
 
     public Bloque() {
-        vars = new HashMap<>();
+        variables = new HashMap<>();
     }
 
-    public Bloque(Bloque bloqueSuperior) {
-        vars = new HashMap<>();
-        for (String nombre : bloqueSuperior.vars.keySet()) {
-            vars.put(nombre, bloqueSuperior.vars.get(nombre));
+    public void addVariable(String name, Tipo type) {
+        if (variables.containsKey(name)) {
+            throw new RuntimeException("Variable " + name + " already defined in this scope");
         }
+        variables.put(name, type);
     }
 
-    public void addVar(String nombre, Var var) {
-        vars.put(nombre, var);
-    }
-
-    public Var getVar(String nombre) {
-
-        if (!vars.containsKey(nombre)) {
-            throw new RuntimeException("Variable " + nombre + " no definida");
+    public Tipo getVariable(String name) {
+        if (variables.containsKey(name)) {
+            return variables.get(name);
         }
-
-        return vars.get(nombre);
-    }
-
-    @Override
-    public String toString() {
-        return vars.toString();
+        throw new RuntimeException("Variable " + name + " not found defined in this scope");
     }
 
 }

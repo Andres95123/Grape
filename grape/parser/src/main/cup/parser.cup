@@ -8,6 +8,7 @@ import java_cup.runtime.*;
 import java.io.*;
 
 import com.grape.utils.*;
+import com.grape.utils.AST.*;
 
 //Librerias
 import java.util.Stack;
@@ -25,7 +26,6 @@ parser code {:
   
   // Estructuras de datos para almacenar los errores
 
-  Stack<Bloque> pilaBloques = new Stack<>();
 
 
 
@@ -86,6 +86,8 @@ terminal String ID;
 /*Declaracion Tipos*/
 terminal Tipo VAR_TYPE;
 terminal DETERMINE,VAR_INVOKER, INFER_INVOKER, FIX_INVOKER;
+non terminal StatementNode VARIABLE_DEFINITION, VAR_DEFINITION, INFER_DEFINITION;
+
 
 /*Declaraciones Operaciones*/
 terminal PLUS,MINUS,MULT,DIV,MOD,ASSIGN;
@@ -93,8 +95,9 @@ terminal PLUS,MINUS,MULT,DIV,MOD,ASSIGN;
 /*Declaraciones Especiales*/
 terminal Endline;
 
-non terminal CODESTART, START_ACTIONS, COMANDOS, VARIABLE_DEFINITION, VAR_DEFINITION, INFER_DEFINITION, TYPE_SELECTOR;
-non terminal Var EXPRESION;
+non terminal ProgramNode CODESTART;
+non terminal StatementNode COMANDOS;
+non terminal ExpressionNode EXPRESION;
 
 //Precedencias Estandar
 precedence right ASSIGN ;
@@ -106,46 +109,31 @@ start with CODESTART;
 
 // Inicio de la gramatica
 
-CODESTART ::= {: pilaBloques.push(new Bloque()); :} COMANDOS 
-{: 
-for(Bloque bloque : pilaBloques){
-  System.out.println(bloque.toString());
-} 
+CODESTART ::= COMANDOS:e1  {: RESULT = new ProgramNode(e1); :}
+              | COMANDOS:e1 CODESTART:e2 {: RESULT = new ProgramNode(e1,e2); :};
 
-for(IR ir : IR.irDeque){
-  System.out.println(ir.toString());
-}
-
-
-:} ;
-
-COMANDOS ::= VARIABLE_DEFINITION COMANDOS |   ;
-
-VARIABLE_DEFINITION ::= VAR_DEFINITION | INFER_DEFINITION ;
+COMANDOS ::= VAR_DEFINITION:e1 {: RESULT = e1;:} | INFER_DEFINITION:e1 {: RESULT = e1;:} ;
 
 // Definicion de variables
 
 VAR_DEFINITION ::= VAR_INVOKER ID:name DETERMINE VAR_TYPE:tipe ASSIGN EXPRESION:val Endline {:
 
-  if (!val.isType(tipe)){
-    report_fatal_error (name + " no es de tipo " + val.getType(), val);
-  }
-
- pilaBloques.peek().addVar(name,val); 
+ RESULT = new OpNode(name, OpType.ASSIGN, val);
 
 :} ;
 
 INFER_DEFINITION ::= INFER_INVOKER ID:name ASSIGN EXPRESION:val Endline {:
 
-  pilaBloques.peek().addVar(name,val);
+  RESULT = new OpNode(name, OpType.ASSIGN, val);
 
 :};
 
+EXPRESION ::= ID:id {: RESULT = new IDNode(blo); :} | VALUE:val {: RESULT = new ValueNode(val.getType(),val.getValue()); :} 
+| EXPRESION:exp1 PLUS EXPRESION:exp2 {: RESULT = new BinaryOpNode(exp1,exp2,OpType.ADD); :}
+| EXPRESION:exp1 MINUS EXPRESION:exp2 {: RESULT = new BinaryOpNode(exp1,exp2,OpType.SUB); :}
+| EXPRESION:exp1 MULT EXPRESION:exp2 {: RESULT = new BinaryOpNode(exp1,exp2,OpType.MUL); :}
+| EXPRESION:exp1 DIV EXPRESION:exp2 {: RESULT = new BinaryOpNode(exp1,exp2,OpType.DIV); :}
+| EXPRESION:exp1 MOD EXPRESION:exp2 {: RESULT = new BinaryOpNode(exp1,exp2,OpType.MOD); :};
 
-EXPRESION ::= VALUE:val {: RESULT = new Var(val.getType(),val.getValue(),true); :} | ID:val {: RESULT = pilaBloques.peek().getVar(val); :}
-| EXPRESION:e1 PLUS EXPRESION:e2 {: Var tmp = e1.sumar(e2); pilaBloques.peek().addVar(tmp.getNombre(),tmp); RESULT = tmp; :}
-| EXPRESION:e1 MINUS EXPRESION:e2 {: Var tmp = e1.restar(e2); pilaBloques.peek().addVar(tmp.getNombre(),tmp); RESULT = tmp; :}
-| EXPRESION:e1 MULT EXPRESION:e2 {: Var tmp = e1.multiplicar(e2); pilaBloques.peek().addVar(tmp.getNombre(),tmp); RESULT = tmp; :}
-| EXPRESION:e1 DIV EXPRESION:e2 {: Var tmp = e1.dividir(e2); pilaBloques.peek().addVar(tmp.getNombre(),tmp); RESULT = tmp; :}
-| EXPRESION:e1 MOD EXPRESION:e2 {: Var tmp = e1.modulo(e2); pilaBloques.peek().addVar(tmp.getNombre(),tmp); RESULT = tmp; :};
+
 

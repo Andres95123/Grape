@@ -1,10 +1,16 @@
 package com.grape.core;
 
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.io.FileReader;
 
 import com.grape.cup.Parser;
 import com.grape.jflex.Scanner;
+import com.grape.utils.ASTAnalyzer;
+import com.grape.utils.IRGenerator;
+import com.grape.utils.AST.*;
 
 import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.SymbolFactory;
@@ -35,10 +41,20 @@ public class Main {
 
             SymbolFactory sf = new ComplexSymbolFactory();
             Parser parser = new Parser(scanner, sf);
-            parser.parse();
+            ProgramNode raiz = (ProgramNode) parser.parse().value;
+
+            // Analizamos el AST
+            new ASTAnalyzer(raiz);
+
+            List<String> irCode = IRGenerator.generateIR(raiz);
+            for (String statement : irCode) {
+                System.out.println(statement);
+            }
+
         } catch (Exception e) {
             System.err.println("error: " + e);
             e.printStackTrace(System.err);
         }
     }
+
 }
