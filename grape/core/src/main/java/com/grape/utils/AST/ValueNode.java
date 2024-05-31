@@ -2,27 +2,27 @@ package com.grape.utils.AST;
 
 import com.grape.utils.Tipo;
 
-public class ValueNode extends ExpressionNode {
+import java_cup.reduce_action;
 
-    Tipo tipo;
-    Object valor;
+public class ValueNode extends Node {
+    Object value;
+    Tipo type;
 
-    public ValueNode(Tipo tipo, Object valor) {
-        this.tipo = tipo;
-        this.valor = valor;
+    public ValueNode(Object value, Tipo type) {
+        this.value = value;
+        this.type = type;
     }
 
-    public Tipo getTipo() {
-        return tipo;
+    public boolean isType(Tipo type) {
+        return this.type == type;
     }
 
-    public Object getValor() {
-        return valor;
+    public Tipo getType() {
+        return type;
     }
 
     @Override
-    public String toString() {
-        return tipo + ":" + valor;
+    public String getCode() {
+        return value.toString();
     }
-
 }

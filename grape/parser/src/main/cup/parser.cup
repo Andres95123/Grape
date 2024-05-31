@@ -12,6 +12,7 @@ import com.grape.utils.AST.*;
 
 //Librerias
 import java.util.Stack;
+import java.util.HashMap;
 
 class Parser;
 
@@ -24,9 +25,21 @@ parser code {:
     }
 ***/
   
-  // Estructuras de datos para almacenar los errores
+  // Estructuras de datos para almacenar variables
+  private HashMap<String, VariableNode> variables = new HashMap<String, VariableNode>();
 
 
+  // Funciones propias
+  public VariableNode addVar(VariableNode var) {
+
+    if (variables.containsKey(var.getName())) {
+      report_error("Variable ya declarada", var.getName());
+    }
+
+    variables.put(var.getName(), var);
+
+    return var;
+  }
 
 
   /**********************************************************************
@@ -85,25 +98,31 @@ terminal String ID;
 
 /*Declaracion Tipos*/
 terminal Tipo VAR_TYPE;
-terminal DETERMINE,VAR_INVOKER, INFER_INVOKER, FIX_INVOKER;
-non terminal StatementNode VARIABLE_DEFINITION, VAR_DEFINITION, INFER_DEFINITION;
+terminal DETERMINE,VAR_INVOKER, INFER_INVOKER;
+non terminal Node VAR_DEFINITION, INFER_DEFINITION, IF_DEFINITION;
 
+/*IFs*/
+terminal IF_INVOKER, THEN_INVOKER, ELSE_INVOKER, ENDIF_INVOKER;
 
 /*Declaraciones Operaciones*/
 terminal PLUS,MINUS,MULT,DIV,MOD,ASSIGN;
+terminal LT,GT,LE,GE,EQ,NEQ;
+terminal OBracket, CBracket;
 
 /*Declaraciones Especiales*/
 terminal Endline;
 
 non terminal ProgramNode CODESTART;
-non terminal StatementNode COMANDOS;
-non terminal ExpressionNode EXPRESION;
+non terminal Node COMANDOS;
+non terminal Node EXPRESION;
 
 //Precedencias Estandar
 precedence right ASSIGN ;
 // precedence left AND, XOR, OR, NOT;
+precedence left LT, GT, LE, GE, EQ, NEQ;
 precedence left PLUS,MINUS ;
 precedence left MULT, DIV, MOD ;
+precedence left OBracket, CBracket;
 
 start with CODESTART;
 
@@ -112,28 +131,50 @@ start with CODESTART;
 CODESTART ::= COMANDOS:e1  {: RESULT = new ProgramNode(e1); :}
               | COMANDOS:e1 CODESTART:e2 {: RESULT = new ProgramNode(e1,e2); :};
 
-COMANDOS ::= VAR_DEFINITION:e1 {: RESULT = e1;:} | INFER_DEFINITION:e1 {: RESULT = e1;:} ;
+COMANDOS ::= VAR_DEFINITION:e1 {: RESULT = e1;:} | INFER_DEFINITION:e1 {: RESULT = e1;:} | IF_DEFINITION:e1 {: RESULT = e1;:};
 
 // Definicion de variables
 
 VAR_DEFINITION ::= VAR_INVOKER ID:name DETERMINE VAR_TYPE:tipe ASSIGN EXPRESION:val Endline {:
 
- RESULT = new OpNode(name, OpType.ASSIGN, val);
+  if (!val.isType(tipe)) {
+    report_error("Tipo de variable no coincide con el valor asignado",name);
+  } 
+
+  RESULT = addVar(new VariableNode(name, val, tipe));
 
 :} ;
 
 INFER_DEFINITION ::= INFER_INVOKER ID:name ASSIGN EXPRESION:val Endline {:
 
-  RESULT = new OpNode(name, OpType.ASSIGN, val);
+  RESULT = addVar(new VariableNode(name, val, val.getType()));
 
+:} ;
+
+EXPRESION ::= ID:id {:
+  if (!variables.containsKey(id)) {
+    report_error("Variable no declarada con anterioridad",id);
+  } 
+  RESULT = variables.get(id);
+:} | VALUE:val {: RESULT = new ValueNode(val.getValue(),val.getType()); :} 
+| EXPRESION:exp1 PLUS EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.ADD); :}
+| EXPRESION:exp1 MINUS EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.SUB); :}
+| EXPRESION:exp1 MULT EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.MUL); :}
+| EXPRESION:exp1 DIV EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.DIV); :}
+| EXPRESION:exp1 MOD EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.MOD); :}
+| OBracket EXPRESION:exp1 CBracket {: RESULT = exp1; :};
+
+
+
+// IFs
+// Condicionales
+EXPRESION ::= EXPRESION:exp1 LT EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.LT); :}
+| EXPRESION:exp1 GT EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.GT); :}
+| EXPRESION:exp1 LE EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.LE); :}
+| EXPRESION:exp1 GE EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.GE); :}
+| EXPRESION:exp1 EQ EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.EQ); :}
+| EXPRESION:exp1 NEQ EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.NEQ); :};
+
+IF_DEFINITION ::= IF_INVOKER EXPRESION:exp1 THEN_INVOKER COMANDOS:com1 ELSE_INVOKER COMANDOS:com2 ENDIF_INVOKER {:
+  RESULT = new IfNode(exp1,com1,com2);
 :};
-
-EXPRESION ::= ID:id {: RESULT = new IDNode(blo); :} | VALUE:val {: RESULT = new ValueNode(val.getType(),val.getValue()); :} 
-| EXPRESION:exp1 PLUS EXPRESION:exp2 {: RESULT = new BinaryOpNode(exp1,exp2,OpType.ADD); :}
-| EXPRESION:exp1 MINUS EXPRESION:exp2 {: RESULT = new BinaryOpNode(exp1,exp2,OpType.SUB); :}
-| EXPRESION:exp1 MULT EXPRESION:exp2 {: RESULT = new BinaryOpNode(exp1,exp2,OpType.MUL); :}
-| EXPRESION:exp1 DIV EXPRESION:exp2 {: RESULT = new BinaryOpNode(exp1,exp2,OpType.DIV); :}
-| EXPRESION:exp1 MOD EXPRESION:exp2 {: RESULT = new BinaryOpNode(exp1,exp2,OpType.MOD); :};
-
-
-

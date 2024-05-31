@@ -8,8 +8,7 @@ import java.io.FileReader;
 
 import com.grape.cup.Parser;
 import com.grape.jflex.Scanner;
-import com.grape.utils.ASTAnalyzer;
-import com.grape.utils.IRGenerator;
+import com.grape.utils.Tipo;
 import com.grape.utils.AST.*;
 
 import java_cup.runtime.ComplexSymbolFactory;
@@ -41,15 +40,16 @@ public class Main {
 
             SymbolFactory sf = new ComplexSymbolFactory();
             Parser parser = new Parser(scanner, sf);
-            ProgramNode raiz = (ProgramNode) parser.parse().value;
 
-            // Analizamos el AST
-            new ASTAnalyzer(raiz);
+            long start = System.nanoTime();
 
-            List<String> irCode = IRGenerator.generateIR(raiz);
-            for (String statement : irCode) {
-                System.out.println(statement);
-            }
+            ProgramNode root = (ProgramNode) parser.parse().value;
+            System.out.println("Parseado correctamente : en " + (System.nanoTime() - start) / Math.pow(10, 9) + " s\n");
+
+            // Escribimos el código en un archivo
+            java.io.FileWriter fw = new java.io.FileWriter("output_code.txt");
+            fw.write(root.getCode());
+            fw.close();
 
         } catch (Exception e) {
             System.err.println("error: " + e);

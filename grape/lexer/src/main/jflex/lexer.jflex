@@ -54,19 +54,29 @@ boolean_negative = "false"
 
 
 // Operaciones
-plus = "+"
-minus = "-"
-mult = "*"
-div = "/"
-mod = "%"
-assign = "="
+    // Aritmeticas
+    plus = "+"
+    minus = "-"
+    mult = "*"
+    div = "/"
+    mod = "%"
+    assign = "="
+    open_bracket = "("
+    close_bracket = ")"
+// Relacionales
+    equal = "=="
+    different = "!="
+    greater = ">"
+    less = "<"
+    greater_equal = ">="
+    less_equal = "<="
 
 determine = ":"
 
 // Operadores lógicos
-and = "&&"
-or = "||"
-not = "!"
+    and = "&&"
+    or = "||"
+    not = "!"
 
 //Tipos de tokens
 integer_type = "int"
@@ -77,7 +87,10 @@ string_type = "string"
 // Textos necesarios
 var = "var"
 infer = "infer"
-fix = "fix"
+if = "if"
+then = "then"
+else = "else"
+endif = "endif"
 
 
 %{
@@ -150,12 +163,24 @@ public void saveSymbol(int type) {
     {string_type} {return symbol(ParserSym.VAR_TYPE, Tipo.STRING);}
 
     // Operaciones
-    {plus} {return symbol(ParserSym.PLUS);}
-    {minus} {return symbol(ParserSym.MINUS);}
-    {mult} {return symbol(ParserSym.MULT);}
-    {div} {return symbol(ParserSym.DIV);}
-    {mod} {return symbol(ParserSym.MOD);}
-    {assign} {return symbol(ParserSym.ASSIGN);}
+        // Aritméticas
+        {plus} {return symbol(ParserSym.PLUS);}
+        {minus} {return symbol(ParserSym.MINUS);}
+        {mult} {return symbol(ParserSym.MULT);}
+        {div} {return symbol(ParserSym.DIV);}
+        {mod} {return symbol(ParserSym.MOD);}
+        {assign} {return symbol(ParserSym.ASSIGN);}
+        {open_bracket} {return symbol(ParserSym.OBracket);}
+        {close_bracket} {return symbol(ParserSym.CBracket);}
+        // Relacionales
+        {equal} {return symbol(ParserSym.EQ);}
+        {different} {return symbol(ParserSym.NEQ);}
+        {greater} {return symbol(ParserSym.GT);}
+        {less} {return symbol(ParserSym.LT);}
+        {greater_equal} {return symbol(ParserSym.GE);}
+        {less_equal} {return symbol(ParserSym.LE);}
+        // Lógicas
+        
 
     // Especiales
     {determine} {return symbol(ParserSym.DETERMINE);}
@@ -165,7 +190,11 @@ public void saveSymbol(int type) {
     // Textos
     {var} {return symbol(ParserSym.VAR_INVOKER);}
     {infer} {return symbol(ParserSym.INFER_INVOKER);}
-    {fix} {return symbol(ParserSym.FIX_INVOKER);}
+    {if} {return symbol(ParserSym.IF_INVOKER);}
+    {then} {return symbol(ParserSym.THEN_INVOKER);}
+    {else} {return symbol(ParserSym.ELSE_INVOKER);}
+    {endif} {return symbol(ParserSym.ENDIF_INVOKER);}
+
 
     {id} {return symbol(ParserSym.ID, yytext());}
 

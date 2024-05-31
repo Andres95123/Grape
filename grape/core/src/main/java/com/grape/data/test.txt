@@ -1,6 +1,8 @@
-infer PI = 3.1416;
-infer r = 5.0*3;
-var myvar : int = 5+5;
-infer text = \1;
-infer test = \1;
-infer T =  55 % 5 + PI + myvar;
+infer a = 5.2;
+infer b = 3.1;
+
+if (a > b) then
+    infer c = a + b;
+else
+    infer d = a - b;
+endif
