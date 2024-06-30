@@ -1,10 +1,11 @@
-package com.grape.utils.AST;
+package com.grape.utils.AST.Definiciones;
 
 import com.grape.utils.Tipo;
+import com.grape.utils.AST.Node;
 
 import java_cup.reduce_action;
 
-public class ValueNode extends Node {
+public class ValueNode extends DefineNode {
     Object value;
     Tipo type;
 
@@ -21,8 +22,8 @@ public class ValueNode extends Node {
         return type;
     }
 
-    @Override
-    public String getCode() {
-        return value.toString();
+    public Object getValue() {
+        return value;
     }
+
 }

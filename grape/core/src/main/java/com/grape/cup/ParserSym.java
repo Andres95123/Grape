@@ -8,32 +8,34 @@ package com.grape.cup;
 /** CUP generated class containing symbol constants. */
 public class ParserSym {
   /* terminals */
-  public static final int MOD = 16;
-  public static final int LT = 18;
-  public static final int PLUS = 12;
+  public static final int MOD = 18;
+  public static final int LT = 20;
+  public static final int PLUS = 14;
   public static final int INFER_INVOKER = 7;
   public static final int VALUE = 2;
-  public static final int CBracket = 25;
-  public static final int GT = 19;
-  public static final int LE = 20;
+  public static final int FOR_INVOKER = 12;
+  public static final int CBracket = 27;
+  public static final int GT = 21;
+  public static final int LE = 22;
   public static final int ID = 3;
   public static final int VAR_INVOKER = 6;
   public static final int DETERMINE = 5;
   public static final int EOF = 0;
-  public static final int MULT = 14;
+  public static final int MULT = 16;
+  public static final int ENDFOR_INVOKER = 13;
+  public static final int DIV = 17;
   public static final int THEN_INVOKER = 9;
-  public static final int DIV = 15;
-  public static final int Endline = 26;
-  public static final int GE = 21;
-  public static final int MINUS = 13;
+  public static final int Endline = 28;
+  public static final int GE = 23;
+  public static final int MINUS = 15;
   public static final int error = 1;
-  public static final int EQ = 22;
-  public static final int ASSIGN = 17;
+  public static final int EQ = 24;
+  public static final int ASSIGN = 19;
   public static final int IF_INVOKER = 8;
   public static final int ELSE_INVOKER = 10;
   public static final int VAR_TYPE = 4;
-  public static final int OBracket = 24;
-  public static final int NEQ = 23;
+  public static final int OBracket = 26;
+  public static final int NEQ = 25;
   public static final int ENDIF_INVOKER = 11;
   public static final String[] terminalNames = new String[] {
   "EOF",
@@ -48,6 +50,8 @@ public class ParserSym {
   "THEN_INVOKER",
   "ELSE_INVOKER",
   "ENDIF_INVOKER",
+  "FOR_INVOKER",
+  "ENDFOR_INVOKER",
   "PLUS",
   "MINUS",
   "MULT",

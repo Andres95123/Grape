@@ -91,6 +91,8 @@ if = "if"
 then = "then"
 else = "else"
 endif = "endif"
+endfor = "endfor"
+for = "for"
 
 
 %{
@@ -194,6 +196,8 @@ public void saveSymbol(int type) {
     {then} {return symbol(ParserSym.THEN_INVOKER);}
     {else} {return symbol(ParserSym.ELSE_INVOKER);}
     {endif} {return symbol(ParserSym.ENDIF_INVOKER);}
+    {for} {return symbol(ParserSym.FOR_INVOKER);}
+    {endfor} {return symbol(ParserSym.ENDFOR_INVOKER);}
 
 
     {id} {return symbol(ParserSym.ID, yytext());}

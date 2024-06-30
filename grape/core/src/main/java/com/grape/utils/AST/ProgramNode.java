@@ -1,7 +1,5 @@
 package com.grape.utils.AST;
 
-import com.grape.utils.Tipo;
-
 public class ProgramNode extends Node {
 
     Node[] nodes;
@@ -24,29 +22,6 @@ public class ProgramNode extends Node {
 
     public Node[] getNodes() {
         return nodes;
-    }
-
-    @Override
-    public boolean isType(Tipo type) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'isType'");
-    }
-
-    
-
-    @Override
-    public String getCode() {
-        StringBuilder sb = new StringBuilder();
-        for (Node node : nodes) {
-            sb.append(node.getCode());
-        }
-        return sb.toString();
-    }
-
-    @Override
-    public Tipo getType() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getType'");
     }
 
 }

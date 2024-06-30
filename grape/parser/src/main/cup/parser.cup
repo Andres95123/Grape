@@ -9,6 +9,8 @@ import java.io.*;
 
 import com.grape.utils.*;
 import com.grape.utils.AST.*;
+import com.grape.utils.AST.Comandos.*;
+import com.grape.utils.AST.Definiciones.*;
 
 //Librerias
 import java.util.Stack;
@@ -24,6 +26,9 @@ parser code {:
         this.scanner = scanner;
     }
 ***/
+
+  // Booleanos de error
+  private boolean error = false;
   
   // Estructuras de datos para almacenar variables
   private HashMap<String, VariableNode> variables = new HashMap<String, VariableNode>();
@@ -59,6 +64,7 @@ parser code {:
 
   @Override
   public void report_error(String message, Object info) {
+    error = true;
     StringBuilder msg = new StringBuilder("ERROR");
     if (info instanceof Symbol) {
       ComplexSymbol token = (ComplexSymbol)info;
@@ -83,6 +89,10 @@ parser code {:
     done_parsing();
   }
 
+  public boolean hasError() {
+    return error;
+  }
+
 
 :}
 
@@ -99,10 +109,17 @@ terminal String ID;
 /*Declaracion Tipos*/
 terminal Tipo VAR_TYPE;
 terminal DETERMINE,VAR_INVOKER, INFER_INVOKER;
-non terminal Node VAR_DEFINITION, INFER_DEFINITION, IF_DEFINITION;
+non terminal Node VAR_DEFINITION_GROUP; // Contiene todas las formas de definir variables
+non terminal Node VAR_DEFINITION, INFER_DEFINITION;
+non terminal Node ASSIGN_DEFINITION;
 
 /*IFs*/
+non terminal Node IF_DEFINITION;
 terminal IF_INVOKER, THEN_INVOKER, ELSE_INVOKER, ENDIF_INVOKER;
+
+/*Bucles*/
+non terminal Node FOR_DEFINITION;
+terminal FOR_INVOKER, ENDFOR_INVOKER;
 
 /*Declaraciones Operaciones*/
 terminal PLUS,MINUS,MULT,DIV,MOD,ASSIGN;
@@ -113,8 +130,9 @@ terminal OBracket, CBracket;
 terminal Endline;
 
 non terminal ProgramNode CODESTART;
+non terminal BlockNode BLOCK;
 non terminal Node COMANDOS;
-non terminal Node EXPRESION;
+non terminal DefineNode EXPRESION;
 
 //Precedencias Estandar
 precedence right ASSIGN ;
@@ -128,14 +146,17 @@ start with CODESTART;
 
 // Inicio de la gramatica
 
-CODESTART ::= COMANDOS:e1  {: RESULT = new ProgramNode(e1); :}
-              | COMANDOS:e1 CODESTART:e2 {: RESULT = new ProgramNode(e1,e2); :};
+CODESTART ::= BLOCK:e1 {: RESULT = new ProgramNode(e1); :};
 
-COMANDOS ::= VAR_DEFINITION:e1 {: RESULT = e1;:} | INFER_DEFINITION:e1 {: RESULT = e1;:} | IF_DEFINITION:e1 {: RESULT = e1;:};
+BLOCK ::= COMANDOS:e1 Endline {: RESULT = new BlockNode(e1); :} | COMANDOS:e1 Endline BLOCK:e2 {: RESULT = new BlockNode(e1,e2); :};
+
+COMANDOS ::= VAR_DEFINITION_GROUP:e1 {:RESULT = e1;:} | ASSIGN_DEFINITION:e1 {:RESULT = e1;:} | IF_DEFINITION:e1 {: RESULT = e1;:} | FOR_DEFINITION:e1 {: RESULT = e1; :};
 
 // Definicion de variables
 
-VAR_DEFINITION ::= VAR_INVOKER ID:name DETERMINE VAR_TYPE:tipe ASSIGN EXPRESION:val Endline {:
+VAR_DEFINITION_GROUP ::= VAR_DEFINITION:e1 {: RESULT = e1; :} | INFER_DEFINITION:e1 {: RESULT = e1; :};
+
+VAR_DEFINITION ::= VAR_INVOKER ID:name DETERMINE VAR_TYPE:tipe ASSIGN EXPRESION:val {:
 
   if (!val.isType(tipe)) {
     report_error("Tipo de variable no coincide con el valor asignado",name);
@@ -145,11 +166,31 @@ VAR_DEFINITION ::= VAR_INVOKER ID:name DETERMINE VAR_TYPE:tipe ASSIGN EXPRESION:
 
 :} ;
 
-INFER_DEFINITION ::= INFER_INVOKER ID:name ASSIGN EXPRESION:val Endline {:
+INFER_DEFINITION ::= INFER_INVOKER ID:name ASSIGN EXPRESION:val {:
 
   RESULT = addVar(new VariableNode(name, val, val.getType()));
 
 :} ;
+
+ASSIGN_DEFINITION ::= ID:id ASSIGN EXPRESION:val {:
+
+  if (!variables.containsKey(id)) {
+    report_error("Variable no declarada con anterioridad",id);
+  } 
+
+  if (!val.isType(variables.get(id).getType())) {
+    report_error("Tipo de variable no coincide con el valor asignado",id);
+  }
+
+  RESULT = new AssignNode(variables.get(id),val);
+
+:};
+
+
+
+
+
+// Definicion de expresiones
 
 EXPRESION ::= ID:id {:
   if (!variables.containsKey(id)) {
@@ -175,6 +216,14 @@ EXPRESION ::= EXPRESION:exp1 LT EXPRESION:exp2 {: RESULT = new ExpresionNode(exp
 | EXPRESION:exp1 EQ EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.EQ); :}
 | EXPRESION:exp1 NEQ EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.NEQ); :};
 
-IF_DEFINITION ::= IF_INVOKER EXPRESION:exp1 THEN_INVOKER COMANDOS:com1 ELSE_INVOKER COMANDOS:com2 ENDIF_INVOKER {:
+IF_DEFINITION ::= IF_INVOKER EXPRESION:exp1 THEN_INVOKER BLOCK:com1 ELSE_INVOKER BLOCK:com2 ENDIF_INVOKER {:
   RESULT = new IfNode(exp1,com1,com2);
+:} | IF_INVOKER EXPRESION:exp1 THEN_INVOKER BLOCK:com1 ENDIF_INVOKER {:
+  RESULT = new IfNode(exp1,com1);
+:};
+
+
+// Bucles
+FOR_DEFINITION ::= FOR_INVOKER OBracket VAR_DEFINITION_GROUP:instance Endline EXPRESION:condition Endline ASSIGN_DEFINITION:increment CBracket THEN_INVOKER BLOCK:body ENDFOR_INVOKER  {:
+  RESULT = new ForNode(instance,condition,increment,body);
 :};

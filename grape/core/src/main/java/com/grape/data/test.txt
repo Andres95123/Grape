@@ -1,8 +1,5 @@
 infer a = 5.2;
 infer b = 3.1;
 
-if (a > b) then
-    infer c = a + b;
-else
-    infer d = a - b;
-endif
+infer c = a + b;
+infer d = c * c;

@@ -4,14 +4,19 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 import java.io.FileReader;
 
 import com.grape.cup.Parser;
 import com.grape.jflex.Scanner;
+import com.grape.utils.ASTExplorer;
+import com.grape.utils.Asembler;
+import com.grape.utils.IntermedianCode;
 import com.grape.utils.Tipo;
 import com.grape.utils.AST.*;
 
 import java_cup.runtime.ComplexSymbolFactory;
+import java_cup.runtime.Symbol;
 import java_cup.runtime.SymbolFactory;
 
 public class Main {
@@ -43,13 +48,30 @@ public class Main {
 
             long start = System.nanoTime();
 
-            ProgramNode root = (ProgramNode) parser.parse().value;
+            // Parseamos el archivo y lo guardamos
+            Symbol parseado = parser.parse();
+
             System.out.println("Parseado correctamente : en " + (System.nanoTime() - start) / Math.pow(10, 9) + " s\n");
 
-            // Escribimos el código en un archivo
-            java.io.FileWriter fw = new java.io.FileWriter("output_code.txt");
-            fw.write(root.getCode());
-            fw.close();
+            // Controlamos errores
+
+            if (parser.hasError()) {
+                System.out.println("Error : error de compilacion");
+                return;
+            }
+
+            ProgramNode root = (ProgramNode) parseado.value;
+
+            // Exploramos el AST (optimizaciones y comprovaciones)
+            start = System.nanoTime();
+            Stack<IntermedianCode> stack = ASTExplorer.explore(root);
+            System.out
+                    .println("Explorado correctamente : en " + (System.nanoTime() - start) / Math.pow(10, 9) + " s\n");
+
+            // Generamos el código asembler
+            start = System.nanoTime();
+            Asembler.asembler(stack);
+            System.out.println("Generado correctamente : en " + (System.nanoTime() - start) / Math.pow(10, 9) + " s\n");
 
         } catch (Exception e) {
             System.err.println("error: " + e);
