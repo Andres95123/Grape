@@ -43,4 +43,26 @@ public class VariableNode extends DefineNode {
         return instanced;
     }
 
+
+    @Override
+    public String toString() {
+        // Escribimos el nombre de la var, el tamaño y el valor
+        return name + " " + getTamaño() + " " + value;
+    }
+
+    private String getTamaño() {
+        // Obtenemos el tamaño de la variable
+        switch (type) {
+            case INT:
+            // case FLOAT:
+                return "dd";
+            case CHAR:
+                return "db";
+            case STRING:
+                return "db";
+            default:
+                return "4";
+        }
+    }
+
 }

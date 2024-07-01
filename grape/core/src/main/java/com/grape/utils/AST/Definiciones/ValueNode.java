@@ -26,4 +26,9 @@ public class ValueNode extends DefineNode {
         return value;
     }
 
+    @Override
+    public String toString() {
+        return value.toString();
+    }
+
 }

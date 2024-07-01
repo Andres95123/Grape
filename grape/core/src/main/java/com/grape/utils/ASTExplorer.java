@@ -20,6 +20,7 @@ import com.grape.utils.AST.Definiciones.VariableNode;
 public class ASTExplorer {
 
     private static Stack<IntermedianCode> intermedianCode = new Stack<>();
+    public static Stack<VariableNode> variables = new Stack<>();
 
     public static Stack<IntermedianCode> explore(ProgramNode raiz) {
 
@@ -48,9 +49,12 @@ public class ASTExplorer {
         if (node instanceof VariableNode) {
 
             VariableNode tmp = (VariableNode) node;
+            if (tmp.getValue() instanceof ExpresionNode) {
+                return explore(tmp.getValue());
+
+            }
             if (!tmp.isInstanced()) {
-                intermedianCode
-                        .push(new IntermedianCode(Comandos.ASSIGN, explore(tmp.getValue()), null, tmp.getName()));
+                variables.push(tmp);
                 tmp.setInstanced();
             }
             return tmp.getName();
@@ -166,7 +170,7 @@ public class ASTExplorer {
     }
 
     private static int numEtiqueta = 0;
-    private static int numTmpVar = 0;
+    public static int numTmpVar = 0;
 
     private static String makeNewEtiqueta() {
         return "E" + numEtiqueta++;
