@@ -122,7 +122,7 @@ non terminal Node FOR_DEFINITION;
 terminal FOR_INVOKER, ENDFOR_INVOKER;
 
 /*Declaraciones Operaciones*/
-terminal PLUS,MINUS,MULT,DIV,MOD,ASSIGN;
+terminal PLUS,DOUBLE_PLUS,MINUS,DOUBLE_MINUS,MULT,DIV,MOD,ASSIGN;
 terminal LT,GT,LE,GE,EQ,NEQ;
 terminal OBracket, CBracket;
 
@@ -132,15 +132,18 @@ terminal Endline;
 non terminal ProgramNode CODESTART;
 non terminal BlockNode BLOCK;
 non terminal Node COMANDOS;
-non terminal DefineNode EXPRESION;
+non terminal DefineNode EXPRESION, ESPECIAL_EXPRESIONS;
 
 //Precedencias Estandar
 precedence right ASSIGN ;
 // precedence left AND, XOR, OR, NOT;
+precedence left ID;
 precedence left LT, GT, LE, GE, EQ, NEQ;
 precedence left PLUS,MINUS ;
 precedence left MULT, DIV, MOD ;
 precedence left OBracket, CBracket;
+
+
 
 start with CODESTART;
 
@@ -192,18 +195,48 @@ ASSIGN_DEFINITION ::= ID:id ASSIGN EXPRESION:val {:
 
 // Definicion de expresiones
 
-EXPRESION ::= ID:id {:
-  if (!variables.containsKey(id)) {
-    report_error("Variable no declarada con anterioridad",id);
-  } 
-  RESULT = variables.get(id);
-:} | VALUE:val {: RESULT = new ValueNode(val.getValue(),val.getType()); :} 
+EXPRESION ::=
+| VALUE:val {: RESULT = new ValueNode(val.getValue(),val.getType()); :} 
 | EXPRESION:exp1 PLUS EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.ADD); :}
 | EXPRESION:exp1 MINUS EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.SUB); :}
 | EXPRESION:exp1 MULT EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.MUL); :}
 | EXPRESION:exp1 DIV EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.DIV); :}
 | EXPRESION:exp1 MOD EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.MOD); :}
-| OBracket EXPRESION:exp1 CBracket {: RESULT = exp1; :};
+| OBracket EXPRESION:exp1 CBracket {: RESULT = exp1; :}
+| ESPECIAL_EXPRESIONS:exp1 {: RESULT = exp1; :};
+
+// Expresión especial de preincremento
+ESPECIAL_EXPRESIONS ::= DOUBLE_PLUS ID:id  {: 
+  if (!variables.containsKey(id)) {
+    report_error("Variable no declarada con anterioridad",id);
+  } 
+  RESULT = new ExpresionNode(variables.get(id),new ValueNode(1,Tipo.INT),Operadores.ADD);
+:} | DOUBLE_MINUS ID:id  {:
+  if (!variables.containsKey(id)) {
+    report_error("Variable no declarada con anterioridad",id);
+  } 
+  RESULT = new ExpresionNode(variables.get(id),new ValueNode(1,Tipo.INT),Operadores.SUB);
+:};
+
+// Expresión especial de postincremento
+ESPECIAL_EXPRESIONS ::= ID:id DOUBLE_PLUS {: 
+  if (!variables.containsKey(id)) {
+    report_error("Variable no declarada con anterioridad",id);
+  } 
+  RESULT = new IncrementNode(variables.get(id),Comandos.ADD);
+:} | ID:id DOUBLE_MINUS  {:
+  if (!variables.containsKey(id)) {
+    report_error("Variable no declarada con anterioridad",id);
+  } 
+  RESULT = new IncrementNode(variables.get(id),Comandos.SUB);
+:};
+
+ESPECIAL_EXPRESIONS ::= ID:id {: 
+  if (!variables.containsKey(id)) {
+    report_error("Variable no declarada con anterioridad",id);
+  } 
+  RESULT = variables.get(id);
+:};
 
 
 
@@ -225,5 +258,5 @@ IF_DEFINITION ::= IF_INVOKER EXPRESION:exp1 THEN_INVOKER BLOCK:com1 ELSE_INVOKER
 
 // Bucles
 FOR_DEFINITION ::= FOR_INVOKER OBracket VAR_DEFINITION_GROUP:instance Endline EXPRESION:condition Endline ASSIGN_DEFINITION:increment CBracket THEN_INVOKER BLOCK:body ENDFOR_INVOKER  {:
-  RESULT = new ForNode(instance,condition,increment,body);
+  RESULT = new ForNode(instance,condition,body,increment);
 :};

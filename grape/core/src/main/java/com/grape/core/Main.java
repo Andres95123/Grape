@@ -1,18 +1,13 @@
 package com.grape.core;
 
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Stack;
 import java.io.FileReader;
 
 import com.grape.cup.Parser;
 import com.grape.jflex.Scanner;
 import com.grape.utils.ASTExplorer;
-import com.grape.utils.Asembler;
 import com.grape.utils.IntermedianCode;
-import com.grape.utils.Tipo;
 import com.grape.utils.AST.*;
 
 import java_cup.runtime.ComplexSymbolFactory;
@@ -69,9 +64,10 @@ public class Main {
                     .println("Explorado correctamente : en " + (System.nanoTime() - start) / Math.pow(10, 9) + " s\n");
 
             // Generamos el código asembler
-            start = System.nanoTime();
-            Asembler.asembler(stack);
-            System.out.println("Generado correctamente : en " + (System.nanoTime() - start) / Math.pow(10, 9) + " s\n");
+            // start = System.nanoTime();
+            // Asembler.asembler(stack);
+            // System.out.println("Generado correctamente : en " + (System.nanoTime() -
+            // start) / Math.pow(10, 9) + " s\n");
 
         } catch (Exception e) {
             System.err.println("error: " + e);

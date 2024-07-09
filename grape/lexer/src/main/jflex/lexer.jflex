@@ -63,6 +63,8 @@ boolean_negative = "false"
     assign = "="
     open_bracket = "("
     close_bracket = ")"
+    double_plus = "++"
+    double_minus = "--"
 // Relacionales
     equal = "=="
     different = "!="
@@ -72,6 +74,7 @@ boolean_negative = "false"
     less_equal = "<="
 
 determine = ":"
+
 
 // Operadores lógicos
     and = "&&"
@@ -167,7 +170,9 @@ public void saveSymbol(int type) {
     // Operaciones
         // Aritméticas
         {plus} {return symbol(ParserSym.PLUS);}
+        {double_plus} {return symbol(ParserSym.DOUBLE_PLUS);}
         {minus} {return symbol(ParserSym.MINUS);}
+        {double_minus} {return symbol(ParserSym.DOUBLE_MINUS);}
         {mult} {return symbol(ParserSym.MULT);}
         {div} {return symbol(ParserSym.DIV);}
         {mod} {return symbol(ParserSym.MOD);}

@@ -3,6 +3,7 @@ package com.grape.utils.AST.Definiciones;
 import com.grape.utils.Tipo;
 import com.grape.utils.AST.Node;
 import com.grape.utils.AST.Operadores;
+import com.grape.utils.AST.Comandos.Comandos;
 
 public class ExpresionNode extends DefineNode {
 
@@ -63,6 +64,21 @@ public class ExpresionNode extends DefineNode {
 
     public Operadores getOp() {
         return op;
+    }
+
+    public Comandos getComando() {
+        // Si es un POST, devolvemos el comando normal
+        if (op.isPostOp()) {
+            return Comandos.valueOf(op.toString().replace("POST_", ""));
+        }
+
+        // Si es un operador relacional, devolvemos el comando de salto con IF_
+        if (op.isRelationalOp()) {
+            return Comandos.valueOf("IF_" + op.toString());
+        }
+
+        // Transformar el operador a un comando
+        return Comandos.valueOf(op.toString());
     }
 
 }
