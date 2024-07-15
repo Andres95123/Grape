@@ -13,6 +13,7 @@ import com.grape.utils.AST.Comandos.ForNode;
 import com.grape.utils.AST.Comandos.IfNode;
 import com.grape.utils.AST.Comandos.IncrementNode;
 import com.grape.utils.AST.Definiciones.ExpresionNode;
+import com.grape.utils.AST.Definiciones.FunctionNode;
 import com.grape.utils.AST.Definiciones.ValueNode;
 import com.grape.utils.AST.Definiciones.VariableNode;
 
@@ -195,6 +196,23 @@ public class ASTExplorer {
 
             // Añadimos la etiqueta de fin
             intermedianCode.add(new IntermedianCode(Comandos.ETIQUETA, null, null, etiquetaFin));
+
+            return null;
+
+        }
+
+        if (node instanceof FunctionNode) {
+
+            FunctionNode function = (FunctionNode) node;
+
+            // Creamos la etiqueta de la función
+            intermedianCode.add(new IntermedianCode(Comandos.ETIQUETA, null, null, function.getName()));
+
+            // Exploramos el bloque de la función
+            explore(function.getBlock());
+
+            // Añadimos la etiqueta de fin de la función
+            intermedianCode.add(new IntermedianCode(Comandos.ETIQUETA, null, null, "END_" + function.getName()));
 
             return null;
 

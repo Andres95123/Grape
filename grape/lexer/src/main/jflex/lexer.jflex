@@ -96,6 +96,9 @@ else = "else"
 endif = "endif"
 endfor = "endfor"
 for = "for"
+func = "func"
+endfunc = "endfunc"
+return = "rtn"
 
 
 %{
@@ -203,6 +206,10 @@ public void saveSymbol(int type) {
     {endif} {return symbol(ParserSym.ENDIF_INVOKER);}
     {for} {return symbol(ParserSym.FOR_INVOKER);}
     {endfor} {return symbol(ParserSym.ENDFOR_INVOKER);}
+    // Funciones
+    {func} {return symbol(ParserSym.FUNCTION_INVOKER);}
+    {endfunc} {return symbol(ParserSym.ENDFUNCTION_INVOKER);}
+    {return} {return symbol(ParserSym.RETURN_INVOKER);}
 
 
     {id} {return symbol(ParserSym.ID, yytext());}

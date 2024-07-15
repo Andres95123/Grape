@@ -121,6 +121,10 @@ terminal IF_INVOKER, THEN_INVOKER, ELSE_INVOKER, ENDIF_INVOKER;
 non terminal Node FOR_DEFINITION;
 terminal FOR_INVOKER, ENDFOR_INVOKER;
 
+/*Funciones*/
+non terminal Node FUNCTION_DEFINITION;
+terminal FUNCTION_INVOKER, ENDFUNCTION_INVOKER, RETURN_INVOKER;
+
 /*Declaraciones Operaciones*/
 terminal PLUS,DOUBLE_PLUS,MINUS,DOUBLE_MINUS,MULT,DIV,MOD,ASSIGN;
 terminal LT,GT,LE,GE,EQ,NEQ;
@@ -153,7 +157,7 @@ CODESTART ::= BLOCK:e1 {: RESULT = new ProgramNode(e1); :};
 
 BLOCK ::= COMANDOS:e1 Endline {: RESULT = new BlockNode(e1); :} | COMANDOS:e1 Endline BLOCK:e2 {: RESULT = new BlockNode(e1,e2); :};
 
-COMANDOS ::= VAR_DEFINITION_GROUP:e1 {:RESULT = e1;:} | ASSIGN_DEFINITION:e1 {:RESULT = e1;:} | IF_DEFINITION:e1 {: RESULT = e1;:} | FOR_DEFINITION:e1 {: RESULT = e1; :};
+COMANDOS ::= VAR_DEFINITION_GROUP:e1 {:RESULT = e1;:} | ASSIGN_DEFINITION:e1 {:RESULT = e1;:} | IF_DEFINITION:e1 {: RESULT = e1;:} | FOR_DEFINITION:e1 {: RESULT = e1; :} | FUNCTION_DEFINITION:e1 {: RESULT = e1; :};
 
 // Definicion de variables
 
@@ -187,7 +191,7 @@ ASSIGN_DEFINITION ::= ID:id ASSIGN EXPRESION:val {:
 
   RESULT = new AssignNode(variables.get(id),val);
 
-:};
+:} | ESPECIAL_EXPRESIONS:e1  {:RESULT = e1;:};
 
 
 
@@ -203,7 +207,13 @@ EXPRESION ::=
 | EXPRESION:exp1 DIV EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.DIV); :}
 | EXPRESION:exp1 MOD EXPRESION:exp2 {: RESULT = new ExpresionNode(exp1,exp2,Operadores.MOD); :}
 | OBracket EXPRESION:exp1 CBracket {: RESULT = exp1; :}
-| ESPECIAL_EXPRESIONS:exp1 {: RESULT = exp1; :};
+| ESPECIAL_EXPRESIONS:exp1 {: RESULT = exp1; :}
+| ID:id {: 
+  if (!variables.containsKey(id)) {
+    report_error("Variable no declarada con anterioridad",id);
+  } 
+  RESULT = variables.get(id);
+:};
 
 // Expresión especial de preincremento
 ESPECIAL_EXPRESIONS ::= DOUBLE_PLUS ID:id  {: 
@@ -231,13 +241,6 @@ ESPECIAL_EXPRESIONS ::= ID:id DOUBLE_PLUS {:
   RESULT = new IncrementNode(variables.get(id),Comandos.SUB);
 :};
 
-ESPECIAL_EXPRESIONS ::= ID:id {: 
-  if (!variables.containsKey(id)) {
-    report_error("Variable no declarada con anterioridad",id);
-  } 
-  RESULT = variables.get(id);
-:};
-
 
 
 // IFs
@@ -259,4 +262,10 @@ IF_DEFINITION ::= IF_INVOKER EXPRESION:exp1 THEN_INVOKER BLOCK:com1 ELSE_INVOKER
 // Bucles
 FOR_DEFINITION ::= FOR_INVOKER OBracket VAR_DEFINITION_GROUP:instance Endline EXPRESION:condition Endline ASSIGN_DEFINITION:increment CBracket THEN_INVOKER BLOCK:body ENDFOR_INVOKER  {:
   RESULT = new ForNode(instance,condition,body,increment);
+:};
+
+// Funciones
+
+FUNCTION_DEFINITION ::= FUNCTION_INVOKER ID:name OBracket CBracket THEN_INVOKER BLOCK:body ENDFUNCTION_INVOKER {:
+  RESULT = new FunctionNode(name,body);
 :};
