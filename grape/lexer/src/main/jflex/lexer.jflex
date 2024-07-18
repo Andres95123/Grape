@@ -37,6 +37,7 @@ import com.grape.utils.*;
 
 ws = [' '|'\t'|'\r'|'\n'|"\r\n"]+
 endline = ";"
+commentario = "//" [^\n]* "\n"
 
 //Declaración de tokens
 number = [0-9]+
@@ -200,11 +201,13 @@ public void saveSymbol(int type) {
 
     // Especiales
     {ws} {}
+    {commentario} {}
     {endline} {return symbol(ParserSym.Endline);}
     {open_block} {return symbol(ParserSym.OPEN_BLOCK);}
     {close_block} {return symbol(ParserSym.CLOSE_BLOCK);}
     {arrow} {return symbol(ParserSym.ARROW);}
     {coma} {return symbol(ParserSym.COMA);}
+    {determine} {return symbol(ParserSym.DETERMINE);}
 
     // If
     {if} {return symbol(ParserSym.IF);}

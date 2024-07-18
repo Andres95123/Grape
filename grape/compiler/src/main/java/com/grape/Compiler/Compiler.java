@@ -338,8 +338,9 @@ public class Compiler {
 
             case RETURN:
                 // Retorno de una funcion
-                // return arg1
-                // rax = arg1, ret
+                // return arg1 -> result
+                // rax = arg1, result = rax, ret
+                textSection.append("\tmov rax, " + code.getArg1() + "\n");
                 textSection.append("\tmov " + code.getResult() + ", rax\n");
                 textSection.append("\tret\n");
                 break;

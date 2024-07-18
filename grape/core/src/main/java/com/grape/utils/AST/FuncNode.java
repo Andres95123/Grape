@@ -1,19 +1,16 @@
 package com.grape.utils.AST;
 
 import com.grape.Symbols.FunctionSymbol;
-import com.grape.Symbols.GrapeSymbol;
 import com.grape.Symbols.UnderlyingSymbolType;
 
 public class FuncNode extends Node {
 
     private FunctionSymbol functionSym;
     private BlockNode body;
-    private GrapeSymbol[] parameters;
 
     public FuncNode(FunctionSymbol funcSym, BlockNode body) {
         this.functionSym = funcSym;
         this.body = body;
-        this.parameters = parameters;
     }
 
     public String getName() {
@@ -28,8 +25,8 @@ public class FuncNode extends Node {
         return functionSym.getReturnType();
     }
 
-    public GrapeSymbol[] getParameters() {
-        return parameters;
+    public Node[] getParameters() {
+        return (Node[]) functionSym.getParameters();
     }
 
 }

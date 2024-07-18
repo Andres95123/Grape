@@ -8,12 +8,12 @@ public class GrapeSymbol {
     private int size;
     private int scope;
 
-    public GrapeSymbol(String name, SymbolType type, UnderlyingSymbolType subtype, int size, int scope) {
+    public GrapeSymbol(String name, SymbolType type, UnderlyingSymbolType subtype, double size, double scope) {
         this.name = name;
         this.type = type;
         this.subtype = subtype;
-        this.size = size;
-        this.scope = scope;
+        this.size = (int) size;
+        this.scope = (int) scope;
     }
 
     public String getName() {

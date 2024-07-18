@@ -19,6 +19,7 @@ import com.grape.utils.AST.IfNode;
 import com.grape.utils.AST.IncrementNode;
 import com.grape.utils.AST.Node;
 import com.grape.utils.AST.ReturnFuncNode;
+import com.grape.utils.AST.ReturnNode;
 import com.grape.utils.AST.ValueNode;
 import com.grape.utils.AST.VarNode;
 
@@ -51,10 +52,11 @@ public class ASTExplorer {
         if (node instanceof VarNode) {
             VarNode var = (VarNode) node;
 
-            String valueVar = explore(var.getValue(), intermediateCode);
-
-            intermediateCode
-                    .add(new IntermedianCode(Code.ASSIGN, valueVar, null, var.getSymbol().getLocation()));
+            if (!var.isNull()) {
+                String valueVar = explore(var.getValue(), intermediateCode);
+                intermediateCode
+                        .add(new IntermedianCode(Code.ASSIGN, valueVar, null, var.getSymbol().getLocation()));
+            }
 
             return var.getSymbol().getLocation();
         }
@@ -208,13 +210,19 @@ public class ASTExplorer {
             FuncNode func = (FuncNode) node;
             List<IntermedianCode> funcCode = new ArrayList<>();
 
-            FunctionSymbol function = new FunctionSymbol(func.getName(), func.getParameters(),
-                    makeNewTmpVar(func.getReturnType()));
+            // Exploramos los parametros
+            for (Node n : func.getParameters()) {
+                explore(n, funcCode);
+            }
 
-            symTable.addFunction(function);
+            // Indicamos que estamos dentro de una funcion
+            symTable.enterFunction(symTable.getFunction(func.getName()));
+
+            // Exploramos el cuerpo de la funcion
 
             explore(func.getBody(), funcCode);
 
+            FunctionSymbol function = symTable.getFunction(func.getName());
             function.setFuncCode(funcCode);
 
             return null;
@@ -223,23 +231,26 @@ public class ASTExplorer {
         if (node instanceof FuncCallNode) {
             FuncCallNode funcCall = (FuncCallNode) node;
 
-            FunctionSymbol function = funcCall.getFuncSymbol();
+            // Llamamos a la funcion
+            intermediateCode.add(new IntermedianCode(Code.CALL, null, null, funcCall.getFuncSymbol().getName()));
 
-            intermediateCode.add(new IntermedianCode(Code.CALL, null, null, function.getName()));
+            return funcCall.getFuncSymbol().getReturnSymbol().getLocation();
 
-            return function.getReturnSymbol().getLocation();
         }
 
         if (node instanceof ReturnFuncNode) {
             ReturnFuncNode returnFunc = (ReturnFuncNode) node;
 
+            if (!symTable.hasFunctions()) {
+                throw new RuntimeException("Return statement outside of a function");
+            }
+
             String value = explore(returnFunc.getReturnNode(), intermediateCode);
-            String returnLocation = symTable.getFunction(returnFunc.getFunctionName().getName()).getReturnSymbol()
-                    .getLocation();
 
-            intermediateCode.add(new IntermedianCode(Code.RETURN, value, null, returnLocation));
+            intermediateCode.add(new IntermedianCode(Code.RETURN, value, null,
+                    symTable.popFunction().getReturnSymbol().getLocation()));
 
-            return returnLocation;
+            return null;
         }
 
         throw new RuntimeException("Unknown node type: " + node.getClass().getName());
@@ -254,6 +265,14 @@ public class ASTExplorer {
     }
 
     public static GrapeSymbol makeNewTmpVar(UnderlyingSymbolType type) {
+        GrapeSymbol tmpVar = new GrapeSymbol("T" + numTmpVar++, SymbolType.ARRAY, type, 1, 0);
+
+        symTable.addVariable(tmpVar);
+
+        return tmpVar;
+    }
+
+    public static GrapeSymbol makeNewTmpVar(UnderlyingSymbolType type, SymbolTable symTable) {
         GrapeSymbol tmpVar = new GrapeSymbol("T" + numTmpVar++, SymbolType.ARRAY, type, 1, 0);
 
         symTable.addVariable(tmpVar);

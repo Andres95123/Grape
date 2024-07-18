@@ -7,12 +7,12 @@ import com.grape.IntermedianCode.IntermedianCode;
 public class FunctionSymbol {
 
     String name;
-    GrapeSymbol[] parameters;
+    Object[] parameters;
     GrapeSymbol returnSymbol;
 
     List<IntermedianCode> intermedianCode;
 
-    public FunctionSymbol(String name, GrapeSymbol[] parameters, GrapeSymbol returnSymbol) {
+    public FunctionSymbol(String name, Object[] parameters, GrapeSymbol returnSymbol) {
         this.name = name;
         this.parameters = parameters;
         this.returnSymbol = returnSymbol;
@@ -31,7 +31,7 @@ public class FunctionSymbol {
         return returnSymbol.getSubtype();
     }
 
-    public GrapeSymbol[] getParameters() {
+    public Object[] getParameters() {
         return parameters;
     }
 

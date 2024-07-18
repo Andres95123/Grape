@@ -33,8 +33,6 @@ parser code {:
   // Estructuras de datos para almacenar variables
   public SymbolTable symTable = new SymbolTable();
 
-  private Stack<FunctionSymbol> functionStack = new Stack<>();
-
 
   /**********************************************************************
    * sobrecàrrega de mètodes per gestionar els errors que es localitzin *
@@ -97,9 +95,12 @@ terminal String ID;
 
 /*Declaracion Tipos*/
 terminal UnderlyingSymbolType VAR_TYPE;
+non terminal GrapeSymbol SYM_OBTAIN;
+non terminal VarNode[] SYM_ARGS;
+non terminal Stack<VarNode> SYM_ARGS_P;
 terminal DETERMINE,VAR_INVOKER, INFER_INVOKER;
-non terminal Node VAR_DEFINITION_GROUP; // Contiene todas las formas de definir variables
-non terminal Node VAR_DEFINITION, INFER_DEFINITION;
+non terminal VarNode VAR_DEFINITION_GROUP; // Contiene todas las formas de definir variables
+non terminal VarNode VAR_DEFINITION, INFER_DEFINITION;
 non terminal Node ASSIGN_DEFINITION, ASSIGN_DEFINITION_GROUP;
 
 /*Operaciones Arimeticas*/
@@ -168,20 +169,31 @@ COMANDOS ::= VAR_DEFINITION_GROUP:e1 {:RESULT = e1;:} |  ESPECIAL_EXPRESIONS:e1 
 
 VAR_DEFINITION_GROUP ::= VAR_DEFINITION:e1 {: RESULT = e1; :} | INFER_DEFINITION:e1 {: RESULT = e1; :};
 
-VAR_DEFINITION ::= VAR_INVOKER ID:name DETERMINE VAR_TYPE:tipe ASSIGN EXPRESION:val {:
+SYM_OBTAIN ::= ID:name DETERMINE VAR_TYPE:tipe {: RESULT = new GrapeSymbol(name, SymbolType.ARRAY, tipe, 1, 0); :}
+| ID:name OBracket VALUE:size {: if (size.getType() != UnderlyingSymbolType.INT) {report_error("Array creation error", null);}:} CBracket DETERMINE VAR_TYPE:tipe {: RESULT = new GrapeSymbol(name, SymbolType.ARRAY, tipe, (double)size.getValue(), 0); :};
 
-  if (tipe != val.getTipo()) {
+SYM_ARGS ::= VAR_DEFINITION:arg SYM_ARGS_P:stack {:stack.add(arg); RESULT = stack.toArray(new VarNode[0]);:} | {:RESULT = new VarNode[0];:};
+
+SYM_ARGS_P ::= COMA VAR_DEFINITION:arg SYM_ARGS_P:stack {:stack.add(arg); RESULT = stack;:} | {:RESULT = new Stack<VarNode>();:};
+
+VAR_DEFINITION ::= VAR_INVOKER SYM_OBTAIN:s ASSIGN EXPRESION:val {:
+
+  if (s.getSubtype() != val.getTipo()) {
     report_error("El tipo de la variable no coincide con el valor asignado", val);
   }
-
-  GrapeSymbol s = new GrapeSymbol(name, SymbolType.ARRAY, val.getTipo(), 1, 0);
 
   symTable.addVariable(s);
 
   RESULT = new VarNode(s, val);
  
 
-:} ;
+:} | VAR_INVOKER SYM_OBTAIN:s {: 
+
+  symTable.addVariable(s); 
+
+  RESULT = new VarNode(s, null); 
+
+:};
 
 INFER_DEFINITION ::= INFER_INVOKER ID:name ASSIGN EXPRESION:val {:
 
@@ -249,10 +261,20 @@ FOR_DEFINITION ::= FOR VAR_DEFINITION_GROUP:instance Endline EXPRESION:condition
 
 // FUNC_ARGS ::= VAR_DEFINITION:e1 {: RESULT = e1; :} | VAR_DEFINITION:e1 COMA FUNC_ARGS:e2 {: RESULT = new FuncArgsNode(e1,e2); :};
 
-FUNC_DEFINITION ::= ID:name OBracket CBracket ARROW VAR_TYPE:tipe OPEN_BLOCK:e2 {:functionStack.add(new FunctionSymbol(name,null,ASTExplorer.makeNewTmpVar(tipe)));:} BLOCK:body CLOSE_BLOCK {: new FuncNode(functionStack.peek(),body);  :};
-
 EXPRESION ::= FUNC_CALL:e1 {: RESULT = e1; :};
 
-FUNC_CALL ::= ID:name OBracket CBracket {: RESULT = new FuncCallNode(symTable.getFunction(name), null); :};
+FUNC_DEFINITION ::= ID:name OBracket SYM_ARGS:params CBracket ARROW VAR_TYPE:tipe OPEN_BLOCK:e2 BLOCK:body CLOSE_BLOCK {: 
+  FunctionSymbol f = new FunctionSymbol(name, params, ASTExplorer.makeNewTmpVar(tipe, symTable)); // Crear funcion con su tipo de retorno especificado
+  symTable.addFunction(f);
+  RESULT = new FuncNode(f,body);  
+:};
 
-FUNC_RETURN ::= RETURN EXPRESION:e1 {: RESULT = new ReturnFuncNode(functionStack.pop(),e1); :};
+FUNC_CALL ::= ID:name OBracket SYM_ARGS:params CBracket {: 
+  FunctionSymbol f = symTable.getFunction(name);
+  if (f == null) {
+    report_error("La funcion no existe", null);
+  }
+  RESULT = new FuncCallNode(f,params);
+:};
+
+FUNC_RETURN ::= RETURN EXPRESION:e1 {: RESULT = new ReturnFuncNode(e1); :};

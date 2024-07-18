@@ -21,6 +21,10 @@ public class VarNode extends ReturnNode {
         return value;
     }
 
+    public boolean isNull() {
+        return value == null;
+    }
+
     @Override
     public UnderlyingSymbolType getTipo() {
         return symbol.getSubtype();

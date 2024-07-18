@@ -1,6 +1,7 @@
 package com.grape.Tables;
 
 import java.util.HashMap;
+import java.util.Stack;
 
 import com.grape.Symbols.FunctionSymbol;
 import com.grape.Symbols.GrapeSymbol;
@@ -10,9 +11,12 @@ public class SymbolTable {
     HashMap<String, GrapeSymbol> varTable;
     HashMap<String, FunctionSymbol> funcTable;
 
+    Stack<FunctionSymbol> functionStack;
+
     public SymbolTable() {
         varTable = new HashMap<>();
         funcTable = new HashMap<>();
+        functionStack = new Stack<>();
     }
 
     public void addVariable(GrapeSymbol symbol) {
@@ -38,10 +42,22 @@ public class SymbolTable {
 
     // Funciones
 
+    public boolean hasFunctions() {
+        return !functionStack.isEmpty();
+    }
+
     public void addFunction(FunctionSymbol function) {
         if (!isSymbolUsed(function.getName())) {
             funcTable.put(function.getName(), function);
         }
+    }
+
+    public void enterFunction(FunctionSymbol function) {
+        functionStack.push(function);
+    }
+
+    public FunctionSymbol popFunction() {
+        return functionStack.pop();
     }
 
     public FunctionSymbol getFunction(String name) {

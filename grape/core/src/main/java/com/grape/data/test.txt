@@ -1,10 +1,6 @@
-infer a = 0;
-infer b = 0;
-infer resultado = 0;
-
-sumar() -> int { 
-    rtn a + b;
+sumar(var a:int, var b:int) -> int {
+    rtn a+b;
 };
 
-sumar();
 
+var resultado:int = sumar();
