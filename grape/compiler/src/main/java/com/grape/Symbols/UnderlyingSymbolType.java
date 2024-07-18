@@ -25,7 +25,7 @@ public enum UnderlyingSymbolType {
         switch (type) {
             case INT:
             case FLOAT:
-                return "resd";
+                return "resq";
             case STRING:
             case BOOL:
                 return "resb";

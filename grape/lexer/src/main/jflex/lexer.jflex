@@ -98,7 +98,7 @@ if = "if"
 then = "then"
 else = "else"
 for = "for"
-func = "func"
+func = "fn"
 return = "rtn"
 
 open_block = "{"

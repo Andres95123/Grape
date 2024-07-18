@@ -1,6 +1,8 @@
-sumar(var a:int, var b:int) -> int {
+
+
+fn sumar(var a:int, var b:int) -> int {
     rtn a+b;
 };
 
 
-var resultado:int = sumar();
+infer resultado = sumar(1,3) + sumar(1,0);

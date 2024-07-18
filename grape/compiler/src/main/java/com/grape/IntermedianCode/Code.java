@@ -23,6 +23,8 @@ public enum Code {
     // Etiquetas
     LABEL, JMP, JEQ, JNE,
 
+    // Stack
+    PUSH, POP,
     // Debugging
     PRINT,
 

@@ -344,6 +344,23 @@ public class Compiler {
                 textSection.append("\tmov " + code.getResult() + ", rax\n");
                 textSection.append("\tret\n");
                 break;
+
+            // Stack
+            case PUSH:
+                // Push a value onto the stack
+                // arg1, registro, push(arg1,registro)
+                // registro = arg1, push registro
+                textSection.append("\tmov rax, " + code.getResult() + "\n");
+                textSection.append("\tpush rax\n");
+                break;
+
+            case POP:
+                // Pop a value from the stack
+                // Usando el registro del arg1, guarda el valor en result
+                // pop arg1, result = arg1
+                textSection.append("\tpop rax\n");
+                textSection.append("\tmov " + code.getResult() + ", rax\n");
+                break;
             // Debugging
             case PRINT:
                 // Imprimir un valor

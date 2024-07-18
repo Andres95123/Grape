@@ -6,9 +6,9 @@ import com.grape.Symbols.UnderlyingSymbolType;
 public class FuncCallNode extends ReturnNode {
 
     private FunctionSymbol functionName;
-    private Node[] parameters;
+    private ReturnNode[] parameters;
 
-    public FuncCallNode(FunctionSymbol functionName, Node[] parameters) {
+    public FuncCallNode(FunctionSymbol functionName, ReturnNode[] parameters) {
         this.functionName = functionName;
         this.parameters = parameters;
     }
@@ -17,7 +17,7 @@ public class FuncCallNode extends ReturnNode {
         return functionName;
     }
 
-    public Node[] getParameters() {
+    public ReturnNode[] getParameters() {
         return parameters;
     }
 

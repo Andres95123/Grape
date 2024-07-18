@@ -52,6 +52,9 @@ public class ASTExplorer {
         if (node instanceof VarNode) {
             VarNode var = (VarNode) node;
 
+            // Añadimos el symbolo
+            // symTable.addVariable(var.getSymbol());
+
             if (!var.isNull()) {
                 String valueVar = explore(var.getValue(), intermediateCode);
                 intermediateCode
@@ -210,13 +213,24 @@ public class ASTExplorer {
             FuncNode func = (FuncNode) node;
             List<IntermedianCode> funcCode = new ArrayList<>();
 
-            // Exploramos los parametros
-            for (Node n : func.getParameters()) {
-                explore(n, funcCode);
-            }
+            // Añadimos la funcion
+            // symTable.addFunction(func.getFunctionSym());
 
             // Indicamos que estamos dentro de una funcion
             symTable.enterFunction(symTable.getFunction(func.getName()));
+
+            // Hacemos un pop de el salto de retorno y lo guardamos en r10 para poder hacer
+            // un push al retornar
+            funcCode.add(new IntermedianCode(Code.POP, null, null, "r10"));
+
+            // Exploramos los parametros
+            for (int i = func.getParameters().length - 1; i >= 0; i--) {
+                ReturnNode n = (ReturnNode) func.getParameters()[i];
+                String var = explore(n, funcCode);
+
+                // Guardamos en var sacado de la pila
+                funcCode.add(new IntermedianCode(Code.POP, null, null, var));
+            }
 
             // Exploramos el cuerpo de la funcion
 
@@ -231,10 +245,23 @@ public class ASTExplorer {
         if (node instanceof FuncCallNode) {
             FuncCallNode funcCall = (FuncCallNode) node;
 
+            // Metemos los parametros en la pila
+            for (ReturnNode n : funcCall.getParameters()) {
+                String value = explore(n, intermediateCode);
+                intermediateCode.add(new IntermedianCode(Code.PUSH, null, null, value));
+            }
+
             // Llamamos a la funcion
             intermediateCode.add(new IntermedianCode(Code.CALL, null, null, funcCall.getFuncSymbol().getName()));
 
-            return funcCall.getFuncSymbol().getReturnSymbol().getLocation();
+            // Creamos una variable temporal para guardar el valor de retorno
+            GrapeSymbol tmpVar = makeNewTmpVar(funcCall.getTipo());
+            String funcReturnVar = funcCall.getFuncSymbol().getReturnSymbol().getLocation();
+
+            // Guardamos
+            intermediateCode.add(new IntermedianCode(Code.ASSIGN, funcReturnVar, null, tmpVar.getLocation()));
+
+            return tmpVar.getLocation();
 
         }
 
@@ -246,6 +273,9 @@ public class ASTExplorer {
             }
 
             String value = explore(returnFunc.getReturnNode(), intermediateCode);
+
+            // Hacemos un push del valor de retorno
+            intermediateCode.add(new IntermedianCode(Code.PUSH, null, null, "r10"));
 
             intermediateCode.add(new IntermedianCode(Code.RETURN, value, null,
                     symTable.popFunction().getReturnSymbol().getLocation()));

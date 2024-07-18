@@ -13,6 +13,10 @@ public class FuncNode extends Node {
         this.body = body;
     }
 
+    public FunctionSymbol getFunctionSym() {
+        return functionSym;
+    }
+
     public String getName() {
         return functionSym.getName();
     }

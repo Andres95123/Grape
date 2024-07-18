@@ -20,6 +20,10 @@ public class GrapeSymbol {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getLocation() {
         return "[" + name + "]";
     }

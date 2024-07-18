@@ -12,27 +12,51 @@ public class SymbolTable {
     HashMap<String, FunctionSymbol> funcTable;
 
     Stack<FunctionSymbol> functionStack;
+    Stack<HashMap<String, GrapeSymbol>> varStack;
 
     public SymbolTable() {
         varTable = new HashMap<>();
+        varStack = new Stack<>();
+        varStack.push(varTable);
+
         funcTable = new HashMap<>();
         functionStack = new Stack<>();
     }
 
     public void addVariable(GrapeSymbol symbol) {
 
+        if (hasFunctions()) {
+            symbol.setName(symbol.getName() + "_" + functionStack.peek().getName());
+        }
+
         if (!isSymbolUsed(symbol.getName())) {
+
+            // Añadimos la variable a la tabla de variables (todos los simbolos)
             varTable.put(symbol.getName(), symbol);
+
+            // Añadimos la variable a la tabla de variables del bloque actual
+            varStack.peek().put(symbol.getName(), symbol);
+
         }
 
     }
 
     public GrapeSymbol getVariable(String name) {
-        return varTable.get(name);
+        if (!containsSymbol(name)) {
+            throw new RuntimeException("Variable " + name + " not found");
+        }
+
+        if (hasFunctions()) {
+            return varTable.get(name + "_" + functionStack.peek().getName());
+        }
+
+        // Buscamos la variable en la tabla de variables del bloque actual
+        return varStack.peek().get(name);
     }
 
     public boolean containsSymbol(String name) {
-        return varTable.containsKey(name);
+        // Buscamos la variable en la tabla de variables del bloque actual
+        return varStack.peek().containsKey(name);
     }
 
     // get Iterator
@@ -54,9 +78,16 @@ public class SymbolTable {
 
     public void enterFunction(FunctionSymbol function) {
         functionStack.push(function);
+
+        // Añadimos un nuevo bloque clon del anterior
+        varStack.push(new HashMap<>(varStack.peek()));
+
     }
 
     public FunctionSymbol popFunction() {
+        // Sacamos la tabla de variables de ese bloque
+        varStack.pop();
+        // Sacamos la funcion
         return functionStack.pop();
     }
 
@@ -76,7 +107,7 @@ public class SymbolTable {
 
     private boolean isSymbolUsed(String symbol) {
         // Comprovar si ya existe la var
-        if (varTable.containsKey(symbol)) {
+        if (varStack.peek().containsKey(symbol)) {
             throw new RuntimeException("Variable " + symbol + " already exists");
         }
 
