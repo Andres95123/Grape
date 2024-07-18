@@ -1,10 +1,12 @@
 package com.grape.utils;
 
+import com.grape.Symbols.UnderlyingSymbolType;
+
 public class ValueContainer {
     Object value;
-    Tipo type;
+    UnderlyingSymbolType type;
 
-    public ValueContainer(Object value, Tipo type) {
+    public ValueContainer(Object value, UnderlyingSymbolType type) {
         this.value = value;
         this.type = type;
     }
@@ -13,15 +15,15 @@ public class ValueContainer {
         return value;
     }
 
-    public Tipo getType() {
+    public UnderlyingSymbolType getType() {
         return type;
     }
 
-    public boolean isType(Tipo type) {
+    public boolean isType(UnderlyingSymbolType type) {
         return this.type == type;
     }
 
-    public void changeType(Tipo type) {
+    public void changeType(UnderlyingSymbolType type) {
         this.type = type;
     }
 

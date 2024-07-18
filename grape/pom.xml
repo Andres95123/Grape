@@ -14,6 +14,7 @@
         <module>lexer</module>
         <module>parser</module>
         <module>core</module>
+        <module>compiler</module>
     </modules>
 
     <properties>

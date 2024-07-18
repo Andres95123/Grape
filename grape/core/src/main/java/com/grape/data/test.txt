@@ -1,11 +1,10 @@
-infer a = 1;
+infer a = 0;
 infer b = 0;
+infer resultado = 0;
 
+sumar() -> int { 
+    rtn a + b;
+};
 
+sumar();
 
-func incrementarA100() then
-    for (infer i = -0; i < 100; i++) then
-        a = a + 1;
-        b++;
-    endfor;
-endfunc;

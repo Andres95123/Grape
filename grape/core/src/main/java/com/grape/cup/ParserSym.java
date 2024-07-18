@@ -8,40 +8,44 @@ package com.grape.cup;
 /** CUP generated class containing symbol constants. */
 public class ParserSym {
   /* terminals */
-  public static final int MOD = 23;
-  public static final int LT = 25;
-  public static final int DOUBLE_MINUS = 20;
-  public static final int PLUS = 17;
-  public static final int INFER_INVOKER = 7;
-  public static final int FUNCTION_INVOKER = 14;
-  public static final int VALUE = 2;
-  public static final int FOR_INVOKER = 12;
-  public static final int CBracket = 32;
-  public static final int GT = 26;
-  public static final int LE = 27;
+  public static final int INCREMENT = 17;
+  public static final int MULT = 10;
+  public static final int GE = 27;
+  public static final int XOR = 21;
+  public static final int FOR = 31;
+  public static final int MINUS = 9;
+  public static final int DECREMENT = 18;
+  public static final int NOT = 22;
+  public static final int AND = 19;
+  public static final int LT = 26;
+  public static final int OR = 20;
+  public static final int DIV = 11;
+  public static final int OPEN_BLOCK = 35;
+  public static final int PLUS = 8;
+  public static final int ASSIGN = 13;
+  public static final int IF = 29;
   public static final int ID = 3;
-  public static final int VAR_INVOKER = 6;
-  public static final int DETERMINE = 5;
-  public static final int ENDFUNCTION_INVOKER = 15;
-  public static final int MULT = 21;
+  public static final int LE = 28;
   public static final int EOF = 0;
-  public static final int ENDFOR_INVOKER = 13;
-  public static final int DIV = 22;
-  public static final int THEN_INVOKER = 9;
-  public static final int Endline = 33;
-  public static final int GE = 28;
-  public static final int MINUS = 19;
-  public static final int DOUBLE_PLUS = 18;
+  public static final int RETURN = 32;
   public static final int error = 1;
-  public static final int RETURN_INVOKER = 16;
-  public static final int EQ = 29;
-  public static final int ASSIGN = 24;
-  public static final int IF_INVOKER = 8;
-  public static final int ELSE_INVOKER = 10;
+  public static final int COMA = 37;
   public static final int VAR_TYPE = 4;
-  public static final int OBracket = 31;
-  public static final int NEQ = 30;
-  public static final int ENDIF_INVOKER = 11;
+  public static final int MOD = 12;
+  public static final int NEQ = 24;
+  public static final int EQ = 23;
+  public static final int ARROW = 16;
+  public static final int OBracket = 14;
+  public static final int VAR_INVOKER = 6;
+  public static final int ELSE = 30;
+  public static final int CLOSE_BLOCK = 36;
+  public static final int DETERMINE = 5;
+  public static final int FUNC = 33;
+  public static final int INFER_INVOKER = 7;
+  public static final int CBracket = 15;
+  public static final int Endline = 34;
+  public static final int VALUE = 2;
+  public static final int GT = 25;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
@@ -51,32 +55,36 @@ public class ParserSym {
   "DETERMINE",
   "VAR_INVOKER",
   "INFER_INVOKER",
-  "IF_INVOKER",
-  "THEN_INVOKER",
-  "ELSE_INVOKER",
-  "ENDIF_INVOKER",
-  "FOR_INVOKER",
-  "ENDFOR_INVOKER",
-  "FUNCTION_INVOKER",
-  "ENDFUNCTION_INVOKER",
-  "RETURN_INVOKER",
   "PLUS",
-  "DOUBLE_PLUS",
   "MINUS",
-  "DOUBLE_MINUS",
   "MULT",
   "DIV",
   "MOD",
   "ASSIGN",
-  "LT",
-  "GT",
-  "LE",
-  "GE",
-  "EQ",
-  "NEQ",
   "OBracket",
   "CBracket",
-  "Endline"
+  "ARROW",
+  "INCREMENT",
+  "DECREMENT",
+  "AND",
+  "OR",
+  "XOR",
+  "NOT",
+  "EQ",
+  "NEQ",
+  "GT",
+  "LT",
+  "GE",
+  "LE",
+  "IF",
+  "ELSE",
+  "FOR",
+  "RETURN",
+  "FUNC",
+  "Endline",
+  "OPEN_BLOCK",
+  "CLOSE_BLOCK",
+  "COMA"
   };
 }
 

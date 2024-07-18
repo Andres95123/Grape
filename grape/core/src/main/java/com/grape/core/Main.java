@@ -7,12 +7,14 @@ import java.io.FileReader;
 import com.grape.cup.Parser;
 import com.grape.jflex.Scanner;
 import com.grape.utils.ASTExplorer;
-import com.grape.utils.IntermedianCode;
 import com.grape.utils.AST.*;
 
 import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.Symbol;
 import java_cup.runtime.SymbolFactory;
+
+import com.grape.Compiler.*;
+import com.grape.Tables.SymbolTable;
 
 public class Main {
 
@@ -55,19 +57,12 @@ public class Main {
                 return;
             }
 
-            ProgramNode root = (ProgramNode) parseado.value;
+            BlockNode root = (BlockNode) parseado.value;
+            SymbolTable st = parser.symTable;
 
-            // Exploramos el AST (optimizaciones y comprovaciones)
-            start = System.nanoTime();
-            Stack<IntermedianCode> stack = ASTExplorer.explore(root);
-            System.out
-                    .println("Explorado correctamente : en " + (System.nanoTime() - start) / Math.pow(10, 9) + " s\n");
+            ASTExplorer.explore(root, st);
 
-            // Generamos el código asembler
-            // start = System.nanoTime();
-            // Asembler.asembler(stack);
-            // System.out.println("Generado correctamente : en " + (System.nanoTime() -
-            // start) / Math.pow(10, 9) + " s\n");
+            Compiler.compile(st, ASTExplorer.allCode, "output.asm");
 
         } catch (Exception e) {
             System.err.println("error: " + e);

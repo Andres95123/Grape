@@ -1,165 +1,142 @@
 package com.grape.utils;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Stack;
+import java.util.ArrayList;
 
+import com.grape.IntermedianCode.*;
+import com.grape.Symbols.FunctionSymbol;
+import com.grape.Symbols.GrapeSymbol;
+import com.grape.Symbols.SymbolType;
+import com.grape.Symbols.UnderlyingSymbolType;
+import com.grape.Tables.SymbolTable;
+import com.grape.utils.AST.AddressNode;
+import com.grape.utils.AST.AssignNode;
 import com.grape.utils.AST.BlockNode;
+import com.grape.utils.AST.ExpresionNode;
+import com.grape.utils.AST.ForNode;
+import com.grape.utils.AST.FuncCallNode;
+import com.grape.utils.AST.FuncNode;
+import com.grape.utils.AST.IfNode;
+import com.grape.utils.AST.IncrementNode;
 import com.grape.utils.AST.Node;
-import com.grape.utils.AST.ProgramNode;
-import com.grape.utils.AST.Comandos.AssignNode;
-import com.grape.utils.AST.Comandos.Comandos;
-import com.grape.utils.AST.Comandos.ForNode;
-import com.grape.utils.AST.Comandos.IfNode;
-import com.grape.utils.AST.Comandos.IncrementNode;
-import com.grape.utils.AST.Definiciones.ExpresionNode;
-import com.grape.utils.AST.Definiciones.FunctionNode;
-import com.grape.utils.AST.Definiciones.ValueNode;
-import com.grape.utils.AST.Definiciones.VariableNode;
+import com.grape.utils.AST.ReturnFuncNode;
+import com.grape.utils.AST.ValueNode;
+import com.grape.utils.AST.VarNode;
+
+import java.util.List;
 
 // Clase que se encarga de recorrer el AST de un Programa, empezando por el ProgramNode
 
 public class ASTExplorer {
 
-    private static Stack<IntermedianCode> intermedianCode = new Stack<>();
-    public static Stack<VariableNode> variables = new Stack<>();
+    public static List<IntermedianCode> allCode;
+    private static SymbolTable symTable;
 
-    public static Stack<IntermedianCode> explore(ProgramNode raiz) {
-
-        for (Node node : raiz.getNodes()) {
-            explore(node);
-        }
-
-        // Print variables
-
-        for (VariableNode variable : variables) {
-            System.out.println(variable);
-        }
-
-        // Separator
-        System.out.println("----------");
-
-        // Print intermedian code
-        for (IntermedianCode ic : intermedianCode) {
-            System.out.println(ic);
-        }
-
-        return intermedianCode;
-
+    public static void explore(BlockNode node, SymbolTable table) {
+        allCode = new ArrayList<>();
+        symTable = table;
+        explore((Node) node, allCode);
     }
 
-    private static String explore(Node node) {
-
-        // Exploraciones estructurales
+    private static String explore(Node node, List<IntermedianCode> intermediateCode) {
 
         if (node instanceof BlockNode) {
-
-            // Es un bloque, recorremos sus nodos y seguimos explorando
-            for (Node n : ((BlockNode) node).getNodes()) {
-                explore(n);
+            BlockNode block = (BlockNode) node;
+            for (Node n : block.getNodes()) {
+                explore(n, intermediateCode);
             }
 
-            // No devolvemos nada
             return null;
         }
 
-        if (node instanceof ExpresionNode) {
-            // Es una expresión binaria, exploramos los dos hijos y generamos el código
-            // intermedio realizando la operación
-            ExpresionNode expresionNode = (ExpresionNode) node;
+        if (node instanceof VarNode) {
+            VarNode var = (VarNode) node;
 
-            // Hijo derecho e izquierdo
-            Node left = expresionNode.getLeft();
-            Node right = expresionNode.getRight();
+            String valueVar = explore(var.getValue(), intermediateCode);
 
-            // Obtenemos las variables de los hijos
-            String varLeft = explore(left);
-            String varRight = explore(right);
+            intermediateCode
+                    .add(new IntermedianCode(Code.ASSIGN, valueVar, null, var.getSymbol().getLocation()));
 
-            // Obtenemos el comando
-            Comandos expresion = expresionNode.getComando();
-
-            // Sino, Añadimos el código intermedio
-            String tmpVar = makeNewTmpVar();
-
-            intermedianCode.add(new IntermedianCode(expresion, varLeft, varRight, tmpVar));
-
-            // Devolvemos la variable temporal
-            return tmpVar;
-
+            return var.getSymbol().getLocation();
         }
 
-        // Exploraciones no estructurales
+        if (node instanceof AddressNode) {
+            AddressNode address = (AddressNode) node;
 
-        // Comandos
+            return address.getSymbol().getLocation();
+        }
 
-        if (node instanceof AssignNode) {
-            // Es una asignación, exploramos el hijo derecho y generamos el código
-            // intermedio
-            AssignNode assign = (AssignNode) node;
+        if (node instanceof ValueNode) {
+            ValueNode value = (ValueNode) node;
 
-            // Añadimos el código intermedio
-            String varTmp = explore(assign.getRight());
-
-            VariableNode variable = (VariableNode) assign.getLeft();
-
-            intermedianCode.add(new IntermedianCode(Comandos.ASSIGN, varTmp, null, variable.getName()));
-
-            // Devolvemos el nombre de la variable
-            return variable.getName();
+            return value.getValue().toString();
         }
 
         if (node instanceof IncrementNode) {
-            // Es un nodo de post incremento/decremento
-            IncrementNode increment = (IncrementNode) node;
+            IncrementNode inc = (IncrementNode) node;
 
-            // Obtenemos la variable
-            VariableNode variable = increment.getVariable();
+            boolean post = inc.isPost();
 
-            // Obtenemos la variable temporal
-            String varTmp = makeNewTmpVar();
+            GrapeSymbol symbol = inc.getSymbol();
+            GrapeSymbol tmpVar = makeNewTmpVar(inc.getTipo());
 
-            // Guardamos el valor original en la var tmp
-            intermedianCode.add(new IntermedianCode(Comandos.ASSIGN, variable.getName(), null, varTmp));
+            // Si post es false, es pre incremento/decremento
+            if (!post) {
 
-            // Incrementamos en 1 la variable original
-            intermedianCode.add(new IntermedianCode(increment.getOp(), variable.getName(), "1", variable.getName()));
+                // Incrementamos el simbolo original
+                intermediateCode.add(
+                        new IntermedianCode(Code.valueOf(inc.getOperator().name()), null, null, symbol.getLocation()));
 
-            // Devolvemos la varTmp
-            return varTmp;
+                // Asignamos el valor del simbolo original a la variable temporal
+                intermediateCode
+                        .add(new IntermedianCode(Code.ASSIGN, symbol.getLocation(), null, tmpVar.getLocation()));
+
+                // Devolvemos la variable temporal
+                return tmpVar.getLocation();
+            }
+
+            // Si post es true, es post incremento/decremento
+
+            // Asignamos el valor del simbolo original a la variable temporal
+            intermediateCode.add(new IntermedianCode(Code.ASSIGN, symbol.getLocation(), null, tmpVar.getLocation()));
+
+            // Incrementamos el simbolo original
+            intermediateCode
+                    .add(new IntermedianCode(Code.valueOf(inc.getOperator().name()), null, null, symbol.getLocation()));
+
+            // Devolvemos la variable temporal
+            return tmpVar.getLocation();
 
         }
 
         if (node instanceof IfNode) {
-            // Es un nodo de If
+
             IfNode ifNode = (IfNode) node;
 
-            // Obtenemos la condición
-            String varTmp = explore(ifNode.getCondition());
+            String condition = explore(ifNode.getCondition(), intermediateCode); // Contiene el resultado de la
+                                                                                 // condicion en una var
 
-            // Obtenemos las etiquetas
-            String etiquetaElse = makeNewEtiqueta();
-            String etiquetaFin = makeNewEtiqueta();
+            String etiqueta_else = makeNewEtiqueta(); // Etiqueta para el salto si la condicion es falsa
+            String etiqueta_fin = makeNewEtiqueta(); // Etiqueta para el salto al final del if
 
-            // Si varTmp es false, saltamos a la etiqueta, 0 es false y -1 true
-            intermedianCode.add(new IntermedianCode(Comandos.IF_EQ, varTmp, "0", etiquetaElse));
+            intermediateCode.add(new IntermedianCode(Code.JEQ, condition, "0", etiqueta_else)); // Si la condicion es
+                                                                                                // falsa, salta a la
+                                                                                                // etiqueta
 
-            // Exploramos el cuerpo del if
-            explore(ifNode.getIfBody());
+            explore(ifNode.getIfBody(), intermediateCode); // Exploramos el cuerpo del if
 
-            // Saltamos a la etiqueta de fin
-            intermedianCode.add(new IntermedianCode(Comandos.GOTO, null, null, etiquetaFin));
+            intermediateCode.add(new IntermedianCode(Code.JMP, null, null, etiqueta_fin)); // Si la condicion es falsa,
+                                                                                           // salta a la etiqueta
 
-            // Añadimos la etiqueta else
-            intermedianCode.add(new IntermedianCode(Comandos.ETIQUETA, null, null, etiquetaElse));
+            intermediateCode.add(new IntermedianCode(Code.LABEL, null, null, etiqueta_else)); // Etiqueta para el salto
+                                                                                              // si la condicion es
+                                                                                              // falsa
 
-            // Exploramos el cuerpo del else si existe
             if (ifNode.getElseBody() != null) {
-                explore(ifNode.getElseBody());
+                explore(ifNode.getElseBody(), intermediateCode); // Exploramos el cuerpo del else
             }
 
-            // Añadimos la etiqueta de fin
-            intermedianCode.add(new IntermedianCode(Comandos.ETIQUETA, null, null, etiquetaFin));
+            intermediateCode.add(new IntermedianCode(Code.LABEL, null, null, etiqueta_fin)); // Etiqueta para el salto
+                                                                                             // al final del if
 
             return null;
 
@@ -169,110 +146,119 @@ public class ASTExplorer {
 
             ForNode forNode = (ForNode) node;
 
-            // Obtenemos las etiquetas
-            String etiquetaInicio = makeNewEtiqueta();
-            String etiquetaFin = makeNewEtiqueta();
+            String etiqueta_inicio = makeNewEtiqueta(); // Etiqueta para el inicio del for
+            String etiqueta_fin = makeNewEtiqueta(); // Etiqueta para el final del for
 
-            // Realizamos la asignación
-            explore(forNode.getInit());
-
-            // Añadimos la etiqueta de inicio
-            intermedianCode.add(new IntermedianCode(Comandos.ETIQUETA, null, null, etiquetaInicio));
-
-            // Obtenemos la condición
-            String varTmp = explore(forNode.getCondition());
-
-            // Si varTmp es false, saltamos a la etiqueta, 0 es false y -1 true
-            intermedianCode.add(new IntermedianCode(Comandos.IF_EQ, varTmp, "0", etiquetaFin));
-
-            // Exploramos el cuerpo del for
-            explore(forNode.getBody());
-
-            // Realizamos la asignación
-            explore(forNode.getIncrement());
-
-            // Saltamos a la etiqueta de inicio
-            intermedianCode.add(new IntermedianCode(Comandos.GOTO, null, null, etiquetaInicio));
-
-            // Añadimos la etiqueta de fin
-            intermedianCode.add(new IntermedianCode(Comandos.ETIQUETA, null, null, etiquetaFin));
-
-            return null;
-
-        }
-
-        if (node instanceof FunctionNode) {
-
-            FunctionNode function = (FunctionNode) node;
-
-            // Creamos la etiqueta de la función
-            intermedianCode.add(new IntermedianCode(Comandos.ETIQUETA, null, null, function.getName()));
-
-            // Exploramos el bloque de la función
-            explore(function.getBlock());
-
-            // Añadimos la etiqueta de fin de la función
-            intermedianCode.add(new IntermedianCode(Comandos.ETIQUETA, null, null, "END_" + function.getName()));
-
-            return null;
-
-        }
-
-        // Estructuras de control
-
-        if (node instanceof VariableNode) {
-
-            VariableNode variable = (VariableNode) node;
-
-            // Si ya se ha instanciado, devolvemos el nombre
-            if (variable.isInstanced()) {
-                return variable.getName();
+            if (forNode.getInit() != null) {
+                explore(forNode.getInit(), intermediateCode); // Exploramos la inicializacion del for
             }
 
-            // Es una variable con una expresión
+            intermediateCode.add(new IntermedianCode(Code.LABEL, null, null, etiqueta_inicio)); // Etiqueta para el
+            // inicio del for
 
-            if (variable.getValue() instanceof ExpresionNode) {
+            if (forNode.getCondition() != null) {
+                String condition = explore(forNode.getCondition(), intermediateCode); // Contiene el resultado de la
+                                                                                      // condicion en una var
 
-                // Obtenemos la variable de la expresión
-                String varTmp = explore(variable.getValue());
-
-                // Añadimos el código intermedio
-                intermedianCode.add(new IntermedianCode(Comandos.ASSIGN, varTmp, null, variable.getName()));
+                intermediateCode.add(new IntermedianCode(Code.JEQ, condition, "0", etiqueta_fin)); // Si la condicion es
+                // falsa, salta a la
+                // etiqueta
             }
 
-            // La añadimos a la lista de variables y devolvemos
+            explore(forNode.getBody(), intermediateCode); // Exploramos el cuerpo del for
 
-            variables.add(variable);
+            if (forNode.getIncrement() != null) {
+                explore(forNode.getIncrement(), intermediateCode); // Exploramos el incremento del for
+            }
 
-            // Indicamos que ya se ha instanciado la variable
-            variable.setInstanced();
+            intermediateCode.add(new IntermedianCode(Code.JMP, null, null, etiqueta_inicio)); // Salta al inicio del for
 
-            return variable.getName();
+            intermediateCode.add(new IntermedianCode(Code.LABEL, null, null, etiqueta_fin)); // Etiqueta para el final
+            // del for
 
+            return null;
         }
 
-        if (node instanceof ValueNode) {
+        if (node instanceof AssignNode) {
+            AssignNode assign = (AssignNode) node;
 
-            ValueNode value = (ValueNode) node;
+            String value = explore(assign.getValue(), intermediateCode);
 
-            // Es un valor, devolvemos el valor
-            return value.toString();
+            intermediateCode
+                    .add(new IntermedianCode(Code.ASSIGN, value, null, assign.getVar().getLocation()));
 
+            return assign.getVar().getLocation();
         }
 
-        throw new UnsupportedOperationException("Unimplemented method 'explore' for node " + node.getClass().getName());
+        if (node instanceof ExpresionNode) {
+            ExpresionNode exp = (ExpresionNode) node;
+
+            String left = explore(exp.getLeft(), intermediateCode);
+            String right = explore(exp.getRight(), intermediateCode);
+
+            GrapeSymbol tmpVar = makeNewTmpVar(exp.getTipo());
+
+            intermediateCode.add(
+                    new IntermedianCode(Code.valueOf(exp.getOperator().name()), left, right, tmpVar.getLocation()));
+
+            return tmpVar.getLocation();
+        }
+
+        if (node instanceof FuncNode) {
+            FuncNode func = (FuncNode) node;
+            List<IntermedianCode> funcCode = new ArrayList<>();
+
+            FunctionSymbol function = new FunctionSymbol(func.getName(), func.getParameters(),
+                    makeNewTmpVar(func.getReturnType()));
+
+            symTable.addFunction(function);
+
+            explore(func.getBody(), funcCode);
+
+            function.setFuncCode(funcCode);
+
+            return null;
+        }
+
+        if (node instanceof FuncCallNode) {
+            FuncCallNode funcCall = (FuncCallNode) node;
+
+            FunctionSymbol function = funcCall.getFuncSymbol();
+
+            intermediateCode.add(new IntermedianCode(Code.CALL, null, null, function.getName()));
+
+            return function.getReturnSymbol().getLocation();
+        }
+
+        if (node instanceof ReturnFuncNode) {
+            ReturnFuncNode returnFunc = (ReturnFuncNode) node;
+
+            String value = explore(returnFunc.getReturnNode(), intermediateCode);
+            String returnLocation = symTable.getFunction(returnFunc.getFunctionName().getName()).getReturnSymbol()
+                    .getLocation();
+
+            intermediateCode.add(new IntermedianCode(Code.RETURN, value, null, returnLocation));
+
+            return returnLocation;
+        }
+
+        throw new RuntimeException("Unknown node type: " + node.getClass().getName());
 
     }
 
     private static int numEtiqueta = 0;
     public static int numTmpVar = 0;
 
-    private static String makeNewEtiqueta() {
+    public static String makeNewEtiqueta() {
         return "E" + numEtiqueta++;
     }
 
-    private static String makeNewTmpVar() {
-        return "T" + numTmpVar++;
+    public static GrapeSymbol makeNewTmpVar(UnderlyingSymbolType type) {
+        GrapeSymbol tmpVar = new GrapeSymbol("T" + numTmpVar++, SymbolType.ARRAY, type, 1, 0);
+
+        symTable.addVariable(tmpVar);
+
+        return tmpVar;
     }
 
 }

@@ -7,6 +7,7 @@ import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 
 import java.io.*;
+import com.grape.Symbols.*;
 import com.grape.utils.*;
 
 %%
@@ -74,6 +75,8 @@ boolean_negative = "false"
     less_equal = "<="
 
 determine = ":"
+coma = ","
+arrow = "->"
 
 
 // Operadores lógicos
@@ -81,7 +84,7 @@ determine = ":"
     or = "||"
     not = "!"
 
-//Tipos de tokens
+//UnderlyingSymbolTypes de tokens
 integer_type = "int"
 boolean_type = "bool"
 char_type = "char"
@@ -93,12 +96,12 @@ infer = "infer"
 if = "if"
 then = "then"
 else = "else"
-endif = "endif"
-endfor = "endfor"
 for = "for"
 func = "func"
-endfunc = "endfunc"
 return = "rtn"
+
+open_block = "{"
+close_block = "}"
 
 
 %{
@@ -119,7 +122,7 @@ return = "rtn"
     /**
      Construcció d'un symbol amb un atribut associat.
      **/
-    private Symbol symbol(int type, Object value, Tipo tipoReal) {
+    private Symbol symbol(int type, Object value, UnderlyingSymbolType tipoReal) {
         // Sumar 1 per a que la primera línia i columna no sigui 0.
         Location esquerra = new Location(yyline+1, yycolumn+1);
         Location dreta = new Location(yyline+1, yycolumn+yytext().length()+1);
@@ -158,24 +161,24 @@ public void saveSymbol(int type) {
 // Definición de las reglas de producción
 
     // Valores
-    {decimal} {return symbol(ParserSym.VALUE, Double.parseDouble(yytext()), Tipo.INT);}
-    {boolean_positive} {return symbol(ParserSym.VALUE, true, Tipo.BOOL);}
-    {boolean_negative} {return symbol(ParserSym.VALUE, false, Tipo.BOOL);}
-    {character} {return symbol(ParserSym.VALUE, yytext().charAt(1), Tipo.CHAR);}
-    {string} {return symbol(ParserSym.VALUE, yytext().substring(1, yytext().length()-1), Tipo.STRING);}
+    {decimal} {return symbol(ParserSym.VALUE, Double.parseDouble(yytext()), UnderlyingSymbolType.INT);}
+    {boolean_positive} {return symbol(ParserSym.VALUE, true, UnderlyingSymbolType.BOOL);}
+    {boolean_negative} {return symbol(ParserSym.VALUE, false, UnderlyingSymbolType.BOOL);}
+    {character} {return symbol(ParserSym.VALUE, yytext().charAt(1), UnderlyingSymbolType.CHAR);}
+    {string} {return symbol(ParserSym.VALUE, yytext().substring(1, yytext().length()-1), UnderlyingSymbolType.STRING);}
 
     // Definicion tipos
-    {integer_type} {return symbol(ParserSym.VAR_TYPE, Tipo.INT);}
-    {boolean_type} {return symbol(ParserSym.VAR_TYPE, Tipo.BOOL);}
-    {char_type} {return symbol(ParserSym.VAR_TYPE, Tipo.CHAR);}
-    {string_type} {return symbol(ParserSym.VAR_TYPE, Tipo.STRING);}
+    {integer_type} {return symbol(ParserSym.VAR_TYPE, UnderlyingSymbolType.INT);}
+    {boolean_type} {return symbol(ParserSym.VAR_TYPE, UnderlyingSymbolType.BOOL);}
+    {char_type} {return symbol(ParserSym.VAR_TYPE, UnderlyingSymbolType.CHAR);}
+    {string_type} {return symbol(ParserSym.VAR_TYPE, UnderlyingSymbolType.STRING);}
 
     // Operaciones
         // Aritméticas
         {plus} {return symbol(ParserSym.PLUS);}
-        {double_plus} {return symbol(ParserSym.DOUBLE_PLUS);}
+        {double_plus} {return symbol(ParserSym.INCREMENT);}
         {minus} {return symbol(ParserSym.MINUS);}
-        {double_minus} {return symbol(ParserSym.DOUBLE_MINUS);}
+        {double_minus} {return symbol(ParserSym.DECREMENT);}
         {mult} {return symbol(ParserSym.MULT);}
         {div} {return symbol(ParserSym.DIV);}
         {mod} {return symbol(ParserSym.MOD);}
@@ -190,26 +193,33 @@ public void saveSymbol(int type) {
         {greater_equal} {return symbol(ParserSym.GE);}
         {less_equal} {return symbol(ParserSym.LE);}
         // Lógicas
+        {and} {return symbol(ParserSym.AND);}
+        {or} {return symbol(ParserSym.OR);}
+        {not} {return symbol(ParserSym.NOT);}
         
 
     // Especiales
-    {determine} {return symbol(ParserSym.DETERMINE);}
     {ws} {}
     {endline} {return symbol(ParserSym.Endline);}
+    {open_block} {return symbol(ParserSym.OPEN_BLOCK);}
+    {close_block} {return symbol(ParserSym.CLOSE_BLOCK);}
+    {arrow} {return symbol(ParserSym.ARROW);}
+    {coma} {return symbol(ParserSym.COMA);}
+
+    // If
+    {if} {return symbol(ParserSym.IF);}
+    {else} {return symbol(ParserSym.ELSE);}
+
+    // Bucles
+    {for} {return symbol(ParserSym.FOR);}
+
+    // Funciones
+    {func} {return symbol(ParserSym.FUNC);}
+    {return} {return symbol(ParserSym.RETURN);}
 
     // Textos
     {var} {return symbol(ParserSym.VAR_INVOKER);}
     {infer} {return symbol(ParserSym.INFER_INVOKER);}
-    {if} {return symbol(ParserSym.IF_INVOKER);}
-    {then} {return symbol(ParserSym.THEN_INVOKER);}
-    {else} {return symbol(ParserSym.ELSE_INVOKER);}
-    {endif} {return symbol(ParserSym.ENDIF_INVOKER);}
-    {for} {return symbol(ParserSym.FOR_INVOKER);}
-    {endfor} {return symbol(ParserSym.ENDFOR_INVOKER);}
-    // Funciones
-    {func} {return symbol(ParserSym.FUNCTION_INVOKER);}
-    {endfunc} {return symbol(ParserSym.ENDFUNCTION_INVOKER);}
-    {return} {return symbol(ParserSym.RETURN_INVOKER);}
 
 
     {id} {return symbol(ParserSym.ID, yytext());}

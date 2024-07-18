@@ -4,32 +4,20 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-          <groupId>com.grape.core</groupId>
-          <artifactId>grape</artifactId>
+          <groupId>com.grape</groupId>
+          <artifactId>core</artifactId>
           <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.grape.core</groupId>
-    <artifactId>core</artifactId>
+    <groupId>com.grape</groupId>
+    <artifactId>compiler</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
-
-    <dependencies>
-    <!-- Otras dependencias -->
     
-    <!-- Dependencia del módulo compiler -->
-    <dependency>
-        <groupId>com.grape</groupId>
-        <artifactId>compiler</artifactId>
-        <version>1.0-SNAPSHOT</version> <!-- Asegúrate de usar la versión correcta -->
-    </dependency>
-</dependencies>
-
     <build>
     <plugins>
         <!-- Plugin para empaquetar los archivos Java en un JAR -->
@@ -40,15 +28,11 @@
             <configuration>
                 <archive>
                     <manifest>
-                        <!-- Especifica la clase principal si necesitas una -->
-                        <mainClass>com.grape.core.Main</mainClass>
                     </manifest>
                 </archive>
             </configuration>
         </plugin>
     </plugins>
 </build>
-
-
 
 </project>
