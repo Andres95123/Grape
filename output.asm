@@ -15,14 +15,14 @@ T3 resq 1
 section .text
 global _start
 _start:
-	; 3 ASSIGN null -> [T5]
-	mov rax, 3
+	; 2 ASSIGN null -> [T5]
+	mov rax, 2
 	mov [T5], rax
 	; null PUSH null -> [T5]
 	mov rax, [T5]
 	push rax
-	; 1 ASSIGN null -> [T6]
-	mov rax, 1
+	; 10 ASSIGN null -> [T6]
+	mov rax, 10
 	mov [T6], rax
 	; null PUSH null -> [T6]
 	mov rax, [T6]
@@ -32,8 +32,8 @@ _start:
 	; [T0] ASSIGN null -> [T7]
 	mov rax, [T0]
 	mov [T7], rax
-	; T7 ASSIGN null -> [resultado]
-	mov rax, T7
+	; [T7] ASSIGN null -> [resultado]
+	mov rax, [T7]
 	mov [resultado], rax
 _stop_exit:
 	mov rax, 60
@@ -52,8 +52,8 @@ Pow:
 	; 1 ASSIGN null -> [T1]
 	mov rax, 1
 	mov [T1], rax
-	; T1 ASSIGN null -> [i]
-	mov rax, T1
+	; [T1] ASSIGN null -> [i]
+	mov rax, [T1]
 	mov [i], rax
 	; null LABEL null -> E0
 E0:
@@ -64,8 +64,8 @@ E0:
 	setl al
 	movzx rax, al
 	mov [T2], rax
-	; T2 JEQ 0 -> E1
-	mov rax, T2
+	; [T2] JEQ 0 -> E1
+	mov rax, [T2]
 	mov rbx, 0
 	cmp rax, rbx
 	je E1

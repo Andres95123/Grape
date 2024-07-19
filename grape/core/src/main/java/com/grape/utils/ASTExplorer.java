@@ -60,8 +60,10 @@ public class ASTExplorer {
 
             if (!var.isNull()) {
                 String valueVar = explore(var.getValue(), intermediateCode);
+                GrapeSymbol valueS = symTable.getVariable(valueVar);
                 intermediateCode
-                        .add(new IntermedianCode(Code.ASSIGN, valueVar, null, var.getSymbol().getLocation()));
+                        .add(new IntermedianCode(Code.ASSIGN, valueS.getLocation(), null,
+                                var.getSymbol().getLocation()));
             }
 
             return var.getSymbol().getName();
@@ -136,9 +138,13 @@ public class ASTExplorer {
             String etiqueta_else = makeNewEtiqueta(); // Etiqueta para el salto si la condicion es falsa
             String etiqueta_fin = makeNewEtiqueta(); // Etiqueta para el salto al final del if
 
-            intermediateCode.add(new IntermedianCode(Code.JEQ, condition, "0", etiqueta_else)); // Si la condicion es
-                                                                                                // falsa, salta a la
-                                                                                                // etiqueta
+            GrapeSymbol conditionS = symTable.getVariable(condition);
+
+            intermediateCode.add(new IntermedianCode(Code.JEQ, conditionS.getLocation(), "0", etiqueta_else)); // Si la
+                                                                                                               // condicion
+                                                                                                               // es
+            // falsa, salta a la
+            // etiqueta
 
             for (EstructuraControl n : ifNode.getIfBody()) {
                 explore(n, intermediateCode); // Exploramos el cuerpo del if
@@ -183,7 +189,8 @@ public class ASTExplorer {
                 String condition = explore(forNode.getCondition(), intermediateCode); // Contiene el resultado de la
                                                                                       // condicion en una var
 
-                intermediateCode.add(new IntermedianCode(Code.JEQ, condition, "0",
+                GrapeSymbol conditionS = symTable.getVariable(condition);
+                intermediateCode.add(new IntermedianCode(Code.JEQ, conditionS.getLocation(), "0",
                         etiqueta_fin)); // Si la condicion es falsa, salta a la etiqueta
             }
 
