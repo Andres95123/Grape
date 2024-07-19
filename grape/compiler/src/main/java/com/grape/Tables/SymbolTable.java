@@ -6,6 +6,8 @@ import java.util.Stack;
 import com.grape.Symbols.FunctionSymbol;
 import com.grape.Symbols.GrapeSymbol;
 
+import java_cup.sym;
+
 public class SymbolTable {
 
     private int blockCounter = 0;
@@ -19,14 +21,13 @@ public class SymbolTable {
     public SymbolTable() {
         varTable = new HashMap<>();
         varStack = new Stack<>();
-        varStack.push(varTable);
+        varStack.push(new HashMap<>(varTable));
 
         funcTable = new HashMap<>();
         functionStack = new Stack<>();
     }
 
     public void addVariable(GrapeSymbol symbol) {
-
 
         if (!isSymbolUsed(symbol.getName())) {
 
@@ -42,7 +43,7 @@ public class SymbolTable {
 
     public void enterBlock() {
         blockCounter++;
-        varStack.push((HashMap<String, GrapeSymbol>) varStack.peek().clone());
+        varStack.push(new HashMap<>(varStack.peek()));
     }
 
     public void exitBlock() {
@@ -53,10 +54,6 @@ public class SymbolTable {
 
         if (!containsSymbol(name)) {
             throw new RuntimeException("Variable " + name + " not found");
-        }
-
-        if (hasFunctions()) {
-            return varTable.get(name + "_" + functionStack.peek().getName());
         }
 
         // Buscamos la variable en la tabla de variables del bloque actual
@@ -81,6 +78,7 @@ public class SymbolTable {
 
     public void addFunction(FunctionSymbol function) {
         if (!isSymbolUsed(function.getName())) {
+
             funcTable.put(function.getName(), function);
         }
     }
@@ -96,6 +94,11 @@ public class SymbolTable {
     }
 
     public FunctionSymbol getFunction(String name) {
+
+        if (!containsFunction(name)) {
+            throw new RuntimeException("Function " + name + " not found");
+        }
+
         return funcTable.get(name);
     }
 

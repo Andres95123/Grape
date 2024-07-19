@@ -1,17 +1,19 @@
 package com.grape.utils.AST.Estructuras;
 
+import java.util.ArrayDeque;
+
 import com.grape.Symbols.FunctionSymbol;
 import com.grape.Symbols.UnderlyingSymbolType;
-import com.grape.utils.AST.Node;
+import com.grape.utils.AST.Base.VarNode;
 
 public class FuncNode extends EstructuraControl {
 
     private FunctionSymbol functionSym;
-    private BloqueComando body;
+    private EstructuraControl[] body;
 
-    public FuncNode(FunctionSymbol funcSym, BloqueComando body) {
+    public FuncNode(FunctionSymbol funcSym, ArrayDeque<EstructuraControl> body) {
         this.functionSym = funcSym;
-        this.body = body;
+        this.body = body.toArray(new EstructuraControl[0]);
     }
 
     public FunctionSymbol getFunctionSym() {
@@ -22,7 +24,7 @@ public class FuncNode extends EstructuraControl {
         return functionSym.getName();
     }
 
-    public BloqueComando getBody() {
+    public EstructuraControl[] getBody() {
         return body;
     }
 
@@ -30,8 +32,8 @@ public class FuncNode extends EstructuraControl {
         return functionSym.getReturnType();
     }
 
-    public Node[] getParameters() {
-        return (Node[]) functionSym.getParameters();
+    public VarNode[] getParameters() {
+        return (VarNode[]) functionSym.getParameters();
     }
 
 }

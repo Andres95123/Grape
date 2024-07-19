@@ -1,0 +1,8 @@
+fn Pow(var base:int, var exp:int) -> int {
+    for var i:int = 1; i<exp;i++ {
+        base = base * base;
+    }
+    rtn base;
+}
+
+var resultado:int = Pow(1,3);

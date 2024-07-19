@@ -47,6 +47,7 @@ string_symbol = \"
 character = \\ [^]
 string = {string_symbol} [^\"]* {string_symbol}
 
+entero = (\-)?{number}
 decimal = (\-)?{number}("."{number})?
 id = [a-zA-Z][a-zA-Z0-9]*
 
@@ -87,6 +88,7 @@ arrow = "->"
 
 //UnderlyingSymbolTypes de tokens
 integer_type = "int"
+float_type = "float"
 boolean_type = "bool"
 char_type = "char"
 string_type = "string"
@@ -162,7 +164,8 @@ public void saveSymbol(int type) {
 // Definición de las reglas de producción
 
     // Valores
-    {decimal} {return symbol(ParserSym.VALUE, Double.parseDouble(yytext()), UnderlyingSymbolType.INT);}
+    {entero} {return symbol(ParserSym.VALUE, Integer.parseInt(yytext()), UnderlyingSymbolType.INT);}
+    {decimal} {return symbol(ParserSym.VALUE, Double.parseDouble(yytext()), UnderlyingSymbolType.FLOAT);}
     {boolean_positive} {return symbol(ParserSym.VALUE, true, UnderlyingSymbolType.BOOL);}
     {boolean_negative} {return symbol(ParserSym.VALUE, false, UnderlyingSymbolType.BOOL);}
     {character} {return symbol(ParserSym.VALUE, yytext().charAt(1), UnderlyingSymbolType.CHAR);}
@@ -170,6 +173,7 @@ public void saveSymbol(int type) {
 
     // Definicion tipos
     {integer_type} {return symbol(ParserSym.VAR_TYPE, UnderlyingSymbolType.INT);}
+    {float_type} {return symbol(ParserSym.VAR_TYPE, UnderlyingSymbolType.FLOAT);}
     {boolean_type} {return symbol(ParserSym.VAR_TYPE, UnderlyingSymbolType.BOOL);}
     {char_type} {return symbol(ParserSym.VAR_TYPE, UnderlyingSymbolType.CHAR);}
     {string_type} {return symbol(ParserSym.VAR_TYPE, UnderlyingSymbolType.STRING);}

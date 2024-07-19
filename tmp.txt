@@ -12,10 +12,6 @@ INFER_DEFINITION -> INFER_INVOKER ID ASSIGN EXPRESION.
 
 // Utiles
 
-SYM_ARGS ::= VAR_DEFINITION:arg SYM_ARGS_P:stack {:stack.add(arg); RESULT = stack.toArray(new VarNode[0]);:} | {:RESULT = new VarNode[0];:};
-
-SYM_ARGS_P ::= COMA VAR_DEFINITION:arg SYM_ARGS_P:stack {:stack.add(arg); RESULT = stack;:} | {:RESULT = new Stack<VarNode>();:};
-
 
 
 
@@ -26,32 +22,13 @@ SYM_ARGS_P ::= COMA VAR_DEFINITION:arg SYM_ARGS_P:stack {:stack.add(arg); RESULT
 
 // FUNC_ARGS ::= VAR_DEFINITION:e1 {: RESULT = e1; :} | VAR_DEFINITION:e1 COMA FUNC_ARGS:e2 {: RESULT = new FuncArgsNode(e1,e2); :};
 
-EXPRESION ::= FUNC_CALL:e1 {: RESULT = e1; :};
 
-EXPRESION_ARRAY ::=  EXPRESION:e1 EXPRESION_ARRAY_P:stack {:stack.add(e1); RESULT = stack.toArray(new ReturnNode[0]);:} | {:RESULT = new ReturnNode[0];:};
 
-EXPRESION_ARRAY_P ::= COMA EXPRESION:e1 EXPRESION_ARRAY_P:stack {:stack.add(e1); RESULT = stack;:} | {:RESULT = new Stack<ReturnNode>();:};
 
-FUNC_DEFINITION ::= FUNC ID:name OBracket SYM_ARGS:params CBracket ARROW VAR_TYPE:tipe BLOCK:body {: 
-  FunctionSymbol f = new FunctionSymbol(name, params, ASTExplorer.makeNewTmpVar(tipe, symTable)); // Crear funcion con su tipo de retorno especificado
-  symTable.addFunction(f);
-  RESULT = new FuncNode(f,body);  
-:};
 
-FUNC_CALL ::= ID:name OBracket EXPRESION_ARRAY:params CBracket {: 
-  FunctionSymbol f = symTable.getFunction(name);
-  if (f == null) {
-    report_error("La funcion no existe", null);
-  }
 
-  // Si el numero de argumentos no coincide con el numero de parametros de la funcion
-  if (f.getParameters().length != params.length) {
-    report_error("La llamada a la funcion " + name + " no tiene el numero correcto de parametros", null);
-  }
 
-  RESULT = new FuncCallNode(f,params);
-:};
 
-FUNC_RETURN ::= RETURN EXPRESION:e1 {: RESULT = new ReturnFuncNode(e1); :}; 
+
 
 */

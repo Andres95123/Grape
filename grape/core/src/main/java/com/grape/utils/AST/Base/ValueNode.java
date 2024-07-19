@@ -16,21 +16,15 @@ public class ValueNode extends Expresion {
 
     public String getValue() {
 
-        Double d = (Double) value;
-
         switch (tipo) {
             case INT:
-
-                return d.intValue() + "";
-
+                return value + "";
             case FLOAT:
-
-                return "_float64(" + d + ")";
-
+                return "_float64(" + value + ")";
             case CHAR:
-                return "'" + (char) d.intValue() + "'";
+                return "'" + (char) value + "'";
             case BOOL:
-                return d.intValue() == 1 ? "-1" : "0";
+                return (boolean) value ? "-1" : "0";
             case STRING:
                 return value.toString();
         }

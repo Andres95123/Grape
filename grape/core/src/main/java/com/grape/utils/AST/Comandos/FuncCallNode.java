@@ -1,23 +1,22 @@
 package com.grape.utils.AST.Comandos;
 
-import com.grape.Symbols.FunctionSymbol;
-import com.grape.utils.AST.Node;
+import com.grape.utils.AST.Base.Expresion;
 
 public class FuncCallNode extends Comando {
 
-    private FunctionSymbol functionName;
-    private Node[] parameters;
+    private String functionName;
+    private Expresion[] parameters;
 
-    public FuncCallNode(FunctionSymbol functionName, Node[] parameters) {
+    public FuncCallNode(String functionName, Expresion[] parameters) {
         this.functionName = functionName;
         this.parameters = parameters;
     }
 
-    public FunctionSymbol getFuncSymbol() {
+    public String getFuncSymbol() {
         return functionName;
     }
 
-    public Node[] getParameters() {
+    public Expresion[] getParameters() {
         return parameters;
     }
 

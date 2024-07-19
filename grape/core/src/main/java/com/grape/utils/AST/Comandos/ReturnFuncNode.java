@@ -11,7 +11,7 @@ public class ReturnFuncNode extends Comando {
         this.Node = Node;
     }
 
-    public Node getNode() {
+    public Node getReturnNode() {
         return Node;
     }
 

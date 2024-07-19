@@ -33,10 +33,6 @@ parser code {:
 
   // Booleanos de error
   private boolean error = false;
-  
-  // Estructuras de datos para almacenar variables
-  public SymbolTable symTable = new SymbolTable();
-
 
   /**********************************************************************
    * sobrecàrrega de mètodes per gestionar els errors que es localitzin *
@@ -130,7 +126,8 @@ non terminal BloqueComando COMANDOS;
 
 /* IF */
 terminal IF, ELSE;
-non terminal EstructuraControl IF_DEFINITION, ELSE_STATEMENT;
+non terminal EstructuraControl IF_DEFINITION;
+non terminal ArrayDeque<EstructuraControl> ELSE_STATEMENT;
 non terminal IfNode IF_STATEMENT; 
 
 /* Bucles */
@@ -149,13 +146,13 @@ non terminal Node ASSIGN_DEFINITION, ASSIGN_DEFINITION_GROUP;
 terminal RETURN, FUNC;
 non terminal FuncArgsNode FUNC_ARGS;
 non terminal EstructuraControl FUNC_DEFINITION;
-non terminal ReturnNode FUNC_CALL;
+non terminal Node FUNC_CALL;
 non terminal Node FUNC_RETURN;
 
 /* Declaraciones de Expresiones */
 non terminal Node EXPRESION, ESPECIAL_EXPRESIONS;
-non terminal ReturnNode[] EXPRESION_ARRAY;
-non terminal Stack<ReturnNode> EXPRESION_ARRAY_P;
+non terminal Expresion[] EXPRESION_ARRAY;
+non terminal Stack<Node> EXPRESION_ARRAY_P;
 
 //Precedencias Estandar
 precedence right ASSIGN ;
@@ -178,20 +175,31 @@ BLOCKS ::= BLOCK:block BLOCKS:bloques
               bloques.addFirst(block); 
               RESULT = bloques; 
             :}
-         | 
+         | BLOCK:block 
             {: 
               ArrayDeque<EstructuraControl> newDeque = new ArrayDeque<>(); 
-              RESULT = newDeque; 
+              newDeque.addFirst(block); 
+              RESULT = newDeque;
+            
             :};
 
-BLOCK ::= COMANDOS:block Endline {: RESULT = block; :} | IF_DEFINITION:block {: RESULT = block; :} | FOR_DEFINITION:block {: RESULT = block; :};
+BLOCK ::= COMANDOS:block Endline {: RESULT = block; :} | IF_DEFINITION:block {: RESULT = block; :} | FOR_DEFINITION:block {: RESULT = block; :} | FUNC_DEFINITION:block {: RESULT = block; :};
 
-COMANDOS ::= VAR_DEFINITION_GROUP:e1 {:RESULT = new BloqueComando(e1); :} | ASSIGN_DEFINITION_GROUP:e1 {:RESULT = new BloqueComando(e1); :};
+COMANDOS ::= VAR_DEFINITION_GROUP:e1 {:RESULT = new BloqueComando(e1); :} | ASSIGN_DEFINITION_GROUP:e1 {:RESULT = new BloqueComando(e1); :} | FUNC_RETURN:e1 {:RESULT = new BloqueComando(e1); :} | FUNC_CALL:e1 {:RESULT = new BloqueComando(e1); :};
 
 // UTILES
 
 SYM_OBTAIN ::= ID:name DETERMINE VAR_TYPE:tipe {: RESULT = new GrapeSymbol(name, SymbolType.ARRAY, tipe, 1, 0); :}
 | ID:name OBracket VALUE:size {: if (size.getType() != UnderlyingSymbolType.INT) {report_error("Array creation error", null);}:} CBracket DETERMINE VAR_TYPE:tipe {: RESULT = new GrapeSymbol(name, SymbolType.ARRAY, tipe, (double)size.getValue(), 0); :};
+
+SYM_ARGS ::= VAR_DEFINITION:arg SYM_ARGS_P:stack {:stack.add(arg); RESULT = stack.toArray(new VarNode[0]);:} | {:RESULT = new VarNode[0];:};
+
+SYM_ARGS_P ::= COMA VAR_DEFINITION:arg SYM_ARGS_P:stack {:stack.add(arg); RESULT = stack;:} | {:RESULT = new Stack<VarNode>();:};
+
+EXPRESION_ARRAY ::=  EXPRESION:e1 EXPRESION_ARRAY_P:stack {:stack.add(e1); RESULT = stack.toArray(new Expresion[0]);:} | {:RESULT = new Expresion[0];:};
+
+EXPRESION_ARRAY_P ::= COMA EXPRESION:e1 EXPRESION_ARRAY_P:stack {:stack.add(e1); RESULT = stack;:} | {:RESULT = new Stack<Node>();:};
+
 
 // Definicion de variables
 
@@ -246,13 +254,28 @@ EXPRESION ::= EXPRESION:e1 EQ EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2, 
 
 IF_DEFINITION ::= IF_STATEMENT:e1 ELSE_STATEMENT:e2  {: e1.setElseBody(e2); RESULT = e1; :};
 
-ELSE_STATEMENT ::= ELSE OPEN_BLOCK BLOCK:elseBlock CLOSE_BLOCK  {: RESULT = elseBlock; :} | ;
-IF_STATEMENT ::= IF EXPRESION:conditional OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new IfNode(conditional,body); :};
+ELSE_STATEMENT ::= ELSE OPEN_BLOCK BLOCKS:elseBlock CLOSE_BLOCK  {: RESULT = elseBlock; :} | ;
+IF_STATEMENT ::= IF EXPRESION:conditional OPEN_BLOCK BLOCKS:body CLOSE_BLOCK  {: RESULT = new IfNode(conditional,body); :};
 
 /* Bucles */
 
-FOR_DEFINITION ::= FOR VAR_DEFINITION_GROUP:instance Endline EXPRESION:conditional Endline ASSIGN_DEFINITION_GROUP:increment OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new ForNode(instance,conditional,body,increment); :}
-| FOR Endline EXPRESION:conditional Endline ASSIGN_DEFINITION_GROUP:increment OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new ForNode(null,conditional,body,increment); :}
-| FOR VAR_DEFINITION_GROUP:instance Endline EXPRESION:conditional Endline OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new ForNode(instance,conditional,body,null); :}
-| FOR Endline EXPRESION:conditional Endline OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new ForNode(null,conditional,body,null); :}
-| FOR Endline Endline OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new ForNode(null,null,body,null); :};
+FOR_DEFINITION ::= FOR VAR_DEFINITION_GROUP:instance Endline EXPRESION:conditional Endline ASSIGN_DEFINITION_GROUP:increment OPEN_BLOCK BLOCKS:body CLOSE_BLOCK  {: RESULT = new ForNode(instance,conditional,body,increment); :}
+| FOR Endline EXPRESION:conditional Endline ASSIGN_DEFINITION_GROUP:increment OPEN_BLOCK BLOCKS:body CLOSE_BLOCK  {: RESULT = new ForNode(null,conditional,body,increment); :}
+| FOR VAR_DEFINITION_GROUP:instance Endline EXPRESION:conditional Endline OPEN_BLOCK BLOCKS:body CLOSE_BLOCK  {: RESULT = new ForNode(instance,conditional,body,null); :}
+| FOR Endline EXPRESION:conditional Endline OPEN_BLOCK BLOCKS:body CLOSE_BLOCK  {: RESULT = new ForNode(null,conditional,body,null); :}
+| FOR Endline Endline OPEN_BLOCK BLOCKS:body CLOSE_BLOCK  {: RESULT = new ForNode(null,null,body,null); :};
+
+/* Funciones */
+
+EXPRESION ::= FUNC_CALL:e1 {: RESULT = e1; :};
+
+FUNC_DEFINITION ::= FUNC ID:name OBracket SYM_ARGS:params CBracket ARROW VAR_TYPE:tipe OPEN_BLOCK BLOCKS:body CLOSE_BLOCK {: 
+  FunctionSymbol f = new FunctionSymbol(name, params, ASTExplorer.makeNewTmpVar(tipe)); // Crear funcion con su tipo de retorno especificado
+  RESULT = new FuncNode(f,body);  
+:};
+
+FUNC_RETURN ::= RETURN EXPRESION:e1 {: RESULT = new ReturnFuncNode(e1); :}; 
+
+FUNC_CALL ::= ID:name OBracket EXPRESION_ARRAY:params CBracket {: 
+  RESULT = new FuncCallNode(name,params);
+:};

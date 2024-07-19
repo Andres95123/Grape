@@ -1,14 +1,11 @@
 package com.grape.core;
 
 import java.io.Reader;
-import java.util.Stack;
 import java.io.FileReader;
 
 import com.grape.cup.Parser;
 import com.grape.jflex.Scanner;
 import com.grape.utils.ASTExplorer;
-import com.grape.utils.AST.*;
-import com.grape.utils.AST.Estructuras.BloqueComando;
 import com.grape.utils.AST.Estructuras.RootNode;
 
 import java_cup.runtime.ComplexSymbolFactory;
@@ -16,7 +13,6 @@ import java_cup.runtime.Symbol;
 import java_cup.runtime.SymbolFactory;
 
 import com.grape.Compiler.*;
-import com.grape.Tables.SymbolTable;
 
 public class Main {
 
@@ -37,7 +33,7 @@ public class Main {
             } else {
                 System.out.println("Introduce el nombre del archivo a compilar");
                 input = new FileReader(
-                        "c:\\Users\\andre\\OneDrive - Universitat de les Illes Balears\\APPS\\GIT\\Grape\\grape\\core\\src\\main\\java\\com\\grape\\data\\test.txt");
+                        "c:\\Users\\andre\\OneDrive - Universitat de les Illes Balears\\APPS\\GIT\\Grape\\grape\\core\\src\\main\\java\\com\\grape\\data\\mathLib.lib");
             }
 
             Scanner scanner = new Scanner(input);
@@ -60,11 +56,10 @@ public class Main {
             }
 
             RootNode root = (RootNode) parseado.value;
-            SymbolTable st = parser.symTable;
 
-            ASTExplorer.explore(root.getEstructuras(), st);
+            ASTExplorer.explore(root.getEstructuras());
 
-            Compiler.compile(st, ASTExplorer.allCode, "output.asm");
+            Compiler.compile(ASTExplorer.symTable, ASTExplorer.allCode, "output.asm");
 
         } catch (Exception e) {
             System.err.println("error: " + e);
