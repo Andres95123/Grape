@@ -19,6 +19,7 @@ import com.grape.Symbols.*;
 import java.util.Stack;
 import java.util.HashMap;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 class Parser;
 
@@ -94,6 +95,10 @@ terminal ValueContainer VALUE;
 terminal String ID;
 terminal UnderlyingSymbolType VAR_TYPE;
 
+/* Importaciones */
+terminal IMPORT;
+non terminal EstructuraControl IMPORT_DEFINITION;
+
 /*Declaracion Compuestas */
 
 non terminal GrapeSymbol SYM_OBTAIN;
@@ -153,6 +158,7 @@ non terminal Node FUNC_RETURN;
 non terminal Node EXPRESION, ESPECIAL_EXPRESIONS;
 non terminal Expresion[] EXPRESION_ARRAY;
 non terminal Stack<Node> EXPRESION_ARRAY_P;
+non terminal Node ARRAY_INDEX;
 
 //Precedencias Estandar
 precedence right ASSIGN ;
@@ -165,6 +171,10 @@ precedence left EQ, NEQ, GT, LT, GE, LE;
 precedence left OBracket, CBracket;
 
 start with ROOT;
+
+// IMPORTACIONES
+
+IMPORT_DEFINITION ::= IMPORT ID:id {: RESULT = new ImportNode(id); :};
 
 // Inicio de la gramatica
 
@@ -183,14 +193,14 @@ BLOCKS ::= BLOCK:block BLOCKS:bloques
             
             :};
 
-BLOCK ::= COMANDOS:block Endline {: RESULT = block; :} | IF_DEFINITION:block {: RESULT = block; :} | FOR_DEFINITION:block {: RESULT = block; :} | FUNC_DEFINITION:block {: RESULT = block; :};
+BLOCK ::= COMANDOS:block Endline {: RESULT = block; :} | IF_DEFINITION:block {: RESULT = block; :} | FOR_DEFINITION:block {: RESULT = block; :} | FUNC_DEFINITION:block {: RESULT = block; :} | IMPORT_DEFINITION:block {: RESULT = block; :};
 
 COMANDOS ::= VAR_DEFINITION_GROUP:e1 {:RESULT = new BloqueComando(e1); :} | ASSIGN_DEFINITION_GROUP:e1 {:RESULT = new BloqueComando(e1); :} | FUNC_RETURN:e1 {:RESULT = new BloqueComando(e1); :} | FUNC_CALL:e1 {:RESULT = new BloqueComando(e1); :};
 
 // UTILES
 
 SYM_OBTAIN ::= ID:name DETERMINE VAR_TYPE:tipe {: RESULT = new GrapeSymbol(name, SymbolType.ARRAY, tipe, 1, 0); :}
-| ID:name OBracket VALUE:size {: if (size.getType() != UnderlyingSymbolType.INT) {report_error("Array creation error", null);}:} CBracket DETERMINE VAR_TYPE:tipe {: RESULT = new GrapeSymbol(name, SymbolType.ARRAY, tipe, (double)size.getValue(), 0); :};
+| ID:name OBracket VALUE:size {: if (size.getType() != UnderlyingSymbolType.INT) {report_error("Array creation error", null);}:} CBracket DETERMINE VAR_TYPE:tipe {: RESULT = new GrapeSymbol(name, SymbolType.ARRAY, tipe, size.getValue(), 0); :};
 
 SYM_ARGS ::= VAR_DEFINITION:arg SYM_ARGS_P:stack {:stack.add(arg); RESULT = stack.toArray(new VarNode[0]);:} | {:RESULT = new VarNode[0];:};
 
@@ -223,7 +233,7 @@ EXPRESION ::= EXPRESION:e1 PLUS EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2
 | EXPRESION:e1 MULT EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2, Operator.MUL); :}
 | EXPRESION:e1 DIV EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2, Operator.DIV); :}
 | EXPRESION:e1 MOD EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2, Operator.MOD); :}
-| MINUS EXPRESION:e1 {: RESULT = new ExpresionNode(new ValueNode(new ValueContainer(0.0,UnderlyingSymbolType.INT)), e1, Operator.SUB); :}
+| MINUS EXPRESION:e1 {: RESULT = new ExpresionNode(new ValueNode(new ValueContainer(0,UnderlyingSymbolType.INT)), e1, Operator.SUB); :}
 | OBracket EXPRESION:e1 CBracket {: RESULT = e1; :}
 | ID:e1 {: RESULT = new AddressNode(e1); :}
 | ESPECIAL_EXPRESIONS:e1 {: RESULT = e1; :}
@@ -238,7 +248,8 @@ ESPECIAL_EXPRESIONS ::= ID:e1 INCREMENT {: RESULT = new IncrementNode(e1, Operat
 
 ASSIGN_DEFINITION_GROUP ::= ASSIGN_DEFINITION:e1 {: RESULT = e1; :} | ESPECIAL_EXPRESIONS:e1 {: RESULT = e1; :};
 
-ASSIGN_DEFINITION ::= ID:e1 ASSIGN EXPRESION:e2 {: RESULT = new AssignNode(e1, e2); :};
+ASSIGN_DEFINITION ::= ID:e1 ARRAY_INDEX:index ASSIGN EXPRESION:e2 {: RESULT = new AssignNode(e1, index, e2); :};
+ARRAY_INDEX ::= OBracket EXPRESION:e1 CBracket {: RESULT = e1; :} | {: RESULT = new ValueNode(new ValueContainer(0, UnderlyingSymbolType.INT)); :};
 
 /* IF / CONDICIONALES */
 

@@ -5,12 +5,14 @@ import java.util.ArrayList;
 import com.grape.IntermedianCode.*;
 import com.grape.Symbols.FunctionSymbol;
 import com.grape.Symbols.GrapeSymbol;
+import com.grape.Symbols.Libreria;
 import com.grape.Symbols.SymbolType;
 import com.grape.Symbols.UnderlyingSymbolType;
 import com.grape.Tables.SymbolTable;
 import com.grape.utils.AST.Node;
 import com.grape.utils.AST.Base.Expresion;
 import com.grape.utils.AST.Base.ExpresionNode;
+import com.grape.utils.AST.Base.ImportNode;
 import com.grape.utils.AST.Base.ValueNode;
 import com.grape.utils.AST.Base.VarNode;
 import com.grape.utils.AST.Comandos.AddressNode;
@@ -217,11 +219,23 @@ public class ASTExplorer {
             GrapeSymbol var = symTable.getVariable(assign.getVar());
 
             String value = explore(assign.getValue(), intermediateCode);
+            String index = explore(assign.getIndex(), intermediateCode);
             GrapeSymbol valueS = symTable.getVariable(value);
 
-            intermediateCode
-                    .add(new IntermedianCode(Code.ASSIGN, valueS.getLocation(), null,
-                            var.getLocation()));
+            if (var.getSubtype() != valueS.getSubtype()) {
+                throw new RuntimeException("Tipos incompatibles en la asignacion");
+            }
+
+            if (index != null) {
+                GrapeSymbol indexS = symTable.getVariable(index);
+                intermediateCode.add(
+                        new IntermedianCode(Code.ASSIGN, valueS.getLocation(), indexS.getLocation(),
+                                var.getLocation("rbx")));
+            } else {
+                intermediateCode.add(
+                        new IntermedianCode(Code.ASSIGN, valueS.getLocation(), null,
+                                var.getLocation()));
+            }
 
             return var.getName();
         }
@@ -286,6 +300,9 @@ public class ASTExplorer {
             FunctionSymbol function = symTable.getFunction(func.getName());
             function.setFuncCode(funcCode);
 
+            // Salimos de la funcion
+            symTable.popFunction();
+
             // Salir del bloque de la funcion
             symTable.exitBlock();
 
@@ -347,7 +364,7 @@ public class ASTExplorer {
             intermediateCode.add(new IntermedianCode(Code.PUSH, null, null, "r10"));
 
             intermediateCode.add(new IntermedianCode(Code.RETURN, valueS.getLocation(), null,
-                    symTable.popFunction().getReturnSymbol().getLocation()));
+                    symTable.peekFunction().getReturnSymbol().getLocation()));
 
             return null;
         }
@@ -360,11 +377,11 @@ public class ASTExplorer {
     public static int numTmpVar = 0;
 
     public static String makeNewEtiqueta() {
-        return "E" + numEtiqueta++;
+        return "_E" + numEtiqueta++;
     }
 
     public static GrapeSymbol makeNewTmpVar(UnderlyingSymbolType type) {
-        GrapeSymbol tmpVar = new GrapeSymbol("T" + numTmpVar++, SymbolType.ARRAY, type, 1, 0);
+        GrapeSymbol tmpVar = new GrapeSymbol("_T" + numTmpVar++, SymbolType.ARRAY, type, 1, 0);
 
         symTable.addVariable(tmpVar);
 

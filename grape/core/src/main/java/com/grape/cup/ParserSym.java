@@ -8,50 +8,52 @@ package com.grape.cup;
 /** CUP generated class containing symbol constants. */
 public class ParserSym {
   /* terminals */
-  public static final int INCREMENT = 14;
-  public static final int MULT = 7;
-  public static final int GE = 24;
-  public static final int XOR = 18;
-  public static final int FOR = 32;
-  public static final int MINUS = 6;
-  public static final int DECREMENT = 15;
-  public static final int NOT = 19;
-  public static final int AND = 16;
-  public static final int LT = 23;
-  public static final int OR = 17;
-  public static final int DIV = 8;
-  public static final int OPEN_BLOCK = 27;
-  public static final int PLUS = 5;
-  public static final int ASSIGN = 10;
-  public static final int IF = 30;
+  public static final int INCREMENT = 15;
+  public static final int MULT = 8;
+  public static final int GE = 25;
+  public static final int XOR = 19;
+  public static final int FOR = 33;
+  public static final int MINUS = 7;
+  public static final int DECREMENT = 16;
+  public static final int NOT = 20;
+  public static final int AND = 17;
+  public static final int LT = 24;
+  public static final int OR = 18;
+  public static final int DIV = 9;
+  public static final int OPEN_BLOCK = 28;
+  public static final int PLUS = 6;
+  public static final int ASSIGN = 11;
+  public static final int IF = 31;
   public static final int ID = 3;
-  public static final int LE = 25;
+  public static final int LE = 26;
   public static final int EOF = 0;
-  public static final int RETURN = 36;
+  public static final int RETURN = 37;
   public static final int error = 1;
   public static final int VAR_TYPE = 4;
-  public static final int COMA = 29;
-  public static final int MOD = 9;
-  public static final int NEQ = 21;
-  public static final int EQ = 20;
-  public static final int ARROW = 13;
-  public static final int OBracket = 11;
-  public static final int VAR_INVOKER = 34;
-  public static final int ELSE = 31;
-  public static final int DETERMINE = 33;
-  public static final int CLOSE_BLOCK = 28;
-  public static final int FUNC = 37;
-  public static final int INFER_INVOKER = 35;
-  public static final int CBracket = 12;
-  public static final int Endline = 26;
+  public static final int COMA = 30;
+  public static final int MOD = 10;
+  public static final int NEQ = 22;
+  public static final int EQ = 21;
+  public static final int IMPORT = 5;
+  public static final int ARROW = 14;
+  public static final int VAR_INVOKER = 35;
+  public static final int OBracket = 12;
+  public static final int ELSE = 32;
+  public static final int DETERMINE = 34;
+  public static final int CLOSE_BLOCK = 29;
+  public static final int FUNC = 38;
+  public static final int INFER_INVOKER = 36;
+  public static final int CBracket = 13;
+  public static final int Endline = 27;
   public static final int VALUE = 2;
-  public static final int GT = 22;
+  public static final int GT = 23;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
   "VALUE",
   "ID",
   "VAR_TYPE",
+  "IMPORT",
   "PLUS",
   "MINUS",
   "MULT",

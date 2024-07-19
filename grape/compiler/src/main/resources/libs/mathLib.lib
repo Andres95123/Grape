@@ -1,0 +1,13 @@
+fn Pow(var base:int, var exp:int) -> int {
+    for var i:int = 1; i<exp;i++ {
+        base = base * base;
+    }
+    rtn base;
+}
+
+fn Positive(var x:int) -> int {
+    if x < 0 {
+        rtn -x;
+    } 
+    rtn x;
+}

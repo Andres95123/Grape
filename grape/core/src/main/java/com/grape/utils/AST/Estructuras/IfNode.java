@@ -24,6 +24,12 @@ public class IfNode extends EstructuraControl {
     }
 
     public void setElseBody(ArrayDeque<EstructuraControl> elseBody) {
+
+        if (elseBody == null) {
+            this.elseBody = null;
+            return;
+        }
+
         this.elseBody = elseBody.toArray(new EstructuraControl[0]);
     }
 

@@ -80,6 +80,7 @@ determine = ":"
 coma = ","
 arrow = "->"
 
+import = "vine"
 
 // Operadores lógicos
     and = "&&"
@@ -212,6 +213,7 @@ public void saveSymbol(int type) {
     {arrow} {return symbol(ParserSym.ARROW);}
     {coma} {return symbol(ParserSym.COMA);}
     {determine} {return symbol(ParserSym.DETERMINE);}
+    {import} {return symbol(ParserSym.IMPORT);}
 
     // If
     {if} {return symbol(ParserSym.IF);}

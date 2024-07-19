@@ -88,6 +88,11 @@ public class SymbolTable {
 
     }
 
+    public FunctionSymbol peekFunction() {
+        // Devolvemos la funcion
+        return functionStack.peek();
+    }
+
     public FunctionSymbol popFunction() {
         // Sacamos la funcion
         return functionStack.pop();

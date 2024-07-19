@@ -6,6 +6,8 @@ import java.io.FileReader;
 import com.grape.cup.Parser;
 import com.grape.jflex.Scanner;
 import com.grape.utils.ASTExplorer;
+import com.grape.utils.ImportManager;
+import com.grape.utils.AST.Estructuras.EstructuraControl;
 import com.grape.utils.AST.Estructuras.RootNode;
 
 import java_cup.runtime.ComplexSymbolFactory;
@@ -33,7 +35,7 @@ public class Main {
             } else {
                 System.out.println("Introduce el nombre del archivo a compilar");
                 input = new FileReader(
-                        "c:\\Users\\andre\\OneDrive - Universitat de les Illes Balears\\APPS\\GIT\\Grape\\grape\\core\\src\\main\\java\\com\\grape\\data\\mathLib.lib");
+                        "c:\\Users\\andre\\OneDrive - Universitat de les Illes Balears\\APPS\\GIT\\Grape\\grape\\core\\src\\main\\java\\com\\grape\\data\\test.txt");
             }
 
             Scanner scanner = new Scanner(input);
@@ -57,9 +59,11 @@ public class Main {
 
             RootNode root = (RootNode) parseado.value;
 
-            ASTExplorer.explore(root.getEstructuras());
+            EstructuraControl[] arbol = ImportManager.searchImports(root.getEstructuras());
 
-            Compiler.compile(ASTExplorer.symTable, ASTExplorer.allCode, "output.asm");
+            ASTExplorer.explore(arbol);
+
+            Compiler.compile(ASTExplorer.symTable, ASTExplorer.allCode, "output/main.asm");
 
         } catch (Exception e) {
             System.err.println("error: " + e);

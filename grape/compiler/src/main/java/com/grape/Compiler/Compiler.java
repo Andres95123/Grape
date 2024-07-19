@@ -1,9 +1,12 @@
 package com.grape.Compiler;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.Buffer;
 import java.util.List;
 
 import com.grape.IntermedianCode.IntermedianCode;
@@ -50,12 +53,17 @@ public class Compiler {
         outputBuilder = new StringBuilder();
 
         // Generar codigo
-        outputBuilder.append("section .bss\n");
-        outputBuilder.append(bssSection.toString());
+        if (bssSection.length() > 0) {
+            outputBuilder.append("section .bss\n");
+            outputBuilder.append(bssSection.toString());
+        }
+
         outputBuilder.append("\nsection .text\n");
-        outputBuilder.append("global _start\n");
-        outputBuilder.append("_start:\n");
-        outputBuilder.append(textSection.toString());
+        if (textSection.length() > 0) {
+            outputBuilder.append("global _start\n");
+            outputBuilder.append("_start:\n");
+            outputBuilder.append(textSection.toString());
+        }
 
         // Añadimos las funciones
         outputBuilder.append(functionsSection.toString());
@@ -72,11 +80,13 @@ public class Compiler {
             assembleCode(code, textSection);
         }
 
-        // Finalizar programa con etiqueta _stop_exit
-        textSection.append("_stop_exit:\n");
-        textSection.append("\tmov rax, 60\n");
-        textSection.append("\tmov rdi, 0\n");
-        textSection.append("\tsyscall\n");
+        if (textSection.length() > 0) {
+            // Finalizar programa con etiqueta _stop_exit
+            textSection.append("_stop_exit:\n");
+            textSection.append("\tmov rax, 60\n");
+            textSection.append("\tmov rdi, 0\n");
+            textSection.append("\tsyscall\n");
+        }
 
     }
 
@@ -288,10 +298,15 @@ public class Compiler {
 
             case ASSIGN:
                 // Asignacion de un valor a una variable :
-                // arg1 -> result
-                // rax = arg1, arg3 = rax
+                // arg1 -> result[arg2]
+                // rax = arg1, rbx = arg2 , result[rbx] = rax
                 textSection.append("\tmov rax, " + code.getArg1() + "\n");
-                textSection.append("\tmov " + code.getResult() + ", rax\n");
+                if (code.getArg2() != null) {
+                    textSection.append("\tmov rbx, " + code.getArg2() + "\n");
+                    textSection.append("\tmov " + code.getResult() + ", rax\n");
+                } else {
+                    textSection.append("\tmov " + code.getResult() + ", rax\n");
+                }
                 break;
 
             case ASSIGN_INDEX:
