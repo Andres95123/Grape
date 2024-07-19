@@ -9,12 +9,16 @@ import java.io.*;
 
 import com.grape.utils.*;
 import com.grape.utils.AST.*;
+import com.grape.utils.AST.Comandos.*;
+import com.grape.utils.AST.Estructuras.*;
+import com.grape.utils.AST.Base.*;
 import com.grape.Tables.*;
 import com.grape.Symbols.*;
 
 //Librerias
 import java.util.Stack;
 import java.util.HashMap;
+import java.util.ArrayDeque;
 
 class Parser;
 
@@ -89,19 +93,16 @@ parser code {:
 scan with {:   next_token(); :}
 **/
 
-/*Declaraciones Valores*/
+/* Declaraciones basicas */
 terminal ValueContainer VALUE;
 terminal String ID;
-
-/*Declaracion Tipos*/
 terminal UnderlyingSymbolType VAR_TYPE;
+
+/*Declaracion Compuestas */
+
 non terminal GrapeSymbol SYM_OBTAIN;
 non terminal VarNode[] SYM_ARGS;
 non terminal Stack<VarNode> SYM_ARGS_P;
-terminal DETERMINE,VAR_INVOKER, INFER_INVOKER;
-non terminal VarNode VAR_DEFINITION_GROUP; // Contiene todas las formas de definir variables
-non terminal VarNode VAR_DEFINITION, INFER_DEFINITION;
-non terminal Node ASSIGN_DEFINITION, ASSIGN_DEFINITION_GROUP;
 
 /*Operaciones Arimeticas*/
 terminal PLUS, MINUS, MULT, DIV, MOD;
@@ -116,31 +117,43 @@ terminal AND, OR, XOR, NOT;
 /*Operaciones de Comparacion*/
 terminal EQ, NEQ, GT, LT, GE, LE;
 
+
+/*Declaracion de Estructuras de Control*/
+
+terminal Endline, OPEN_BLOCK, CLOSE_BLOCK, COMA;
+
+non terminal RootNode ROOT;
+non terminal EstructuraControl BLOCK, BLOCK_P, GRUPO_COMANDOS, GRUPO_COMANDOS_AUX;
+non terminal ArrayDeque<EstructuraControl> BLOCKS;
+
+non terminal BloqueComando COMANDOS;
+
 /* IF */
 terminal IF, ELSE;
-non terminal Node IF_DEFINITION;
+non terminal EstructuraControl IF_DEFINITION, ELSE_STATEMENT;
+non terminal IfNode IF_STATEMENT; 
 
 /* Bucles */
 terminal FOR;
-non terminal Node FOR_DEFINITION;
+non terminal EstructuraControl FOR_DEFINITION;
+
+/* Declaracion de comandos */
+
+/*Declaracion de Variables*/
+terminal DETERMINE,VAR_INVOKER, INFER_INVOKER;
+non terminal VarNode VAR_DEFINITION_GROUP; // Contiene todas las formas de definir variables
+non terminal VarNode VAR_DEFINITION, INFER_DEFINITION;
+non terminal Node ASSIGN_DEFINITION, ASSIGN_DEFINITION_GROUP;
 
 /*Funciones*/
 terminal RETURN, FUNC;
 non terminal FuncArgsNode FUNC_ARGS;
-non terminal Node FUNC_DEFINITION;
+non terminal EstructuraControl FUNC_DEFINITION;
 non terminal ReturnNode FUNC_CALL;
 non terminal Node FUNC_RETURN;
 
-
-/*Declaraciones Especiales*/
-terminal Endline, OPEN_BLOCK, CLOSE_BLOCK, COMA;
-
-non terminal BlockNode CODESTART;
-non terminal BlockNode BLOCK;
-non terminal Node COMANDOS;
-
 /* Declaraciones de Expresiones */
-non terminal ReturnNode EXPRESION, ESPECIAL_EXPRESIONS;
+non terminal Node EXPRESION, ESPECIAL_EXPRESIONS;
 non terminal ReturnNode[] EXPRESION_ARRAY;
 non terminal Stack<ReturnNode> EXPRESION_ARRAY_P;
 
@@ -154,63 +167,48 @@ precedence left MULT, DIV, MOD ;
 precedence left EQ, NEQ, GT, LT, GE, LE;
 precedence left OBracket, CBracket;
 
-
-
-start with CODESTART;
+start with ROOT;
 
 // Inicio de la gramatica
 
-CODESTART ::= BLOCK:e1 {: RESULT = new BlockNode(new BlockNode[]{e1}); :};
+ROOT ::= BLOCKS:bloques {: RESULT = new RootNode(bloques.toArray(new EstructuraControl[0])); :} ;
 
-BLOCK ::= COMANDOS:e1 Endline {: RESULT = new BlockNode(new BlockNode(e1)); :} | COMANDOS:e1 Endline BLOCK:e2 {: RESULT = new BlockNode(new BlockNode(e1,e2)); :};
+BLOCKS ::= BLOCK:block BLOCKS:bloques 
+            {: 
+              bloques.addFirst(block); 
+              RESULT = bloques; 
+            :}
+         | 
+            {: 
+              ArrayDeque<EstructuraControl> newDeque = new ArrayDeque<>(); 
+              RESULT = newDeque; 
+            :};
 
-COMANDOS ::= VAR_DEFINITION_GROUP:e1 {:RESULT = e1;:} |  ESPECIAL_EXPRESIONS:e1 {:RESULT = e1;:} | ASSIGN_DEFINITION:e1 {:RESULT = e1;:} | IF_DEFINITION:e1 {:RESULT = e1;:}
-| FOR_DEFINITION:e1 {:RESULT = e1;:} | FUNC_DEFINITION:e1 {:RESULT = e1;:} | FUNC_CALL:e1 {:RESULT = e1;:} | FUNC_RETURN:e1 {:RESULT = e1;:};
+BLOCK ::= COMANDOS:block Endline {: RESULT = block; :} | IF_DEFINITION:block {: RESULT = block; :} | FOR_DEFINITION:block {: RESULT = block; :};
 
-// Definicion de variables
+COMANDOS ::= VAR_DEFINITION_GROUP:e1 {:RESULT = new BloqueComando(e1); :} | ASSIGN_DEFINITION_GROUP:e1 {:RESULT = new BloqueComando(e1); :};
 
-VAR_DEFINITION_GROUP ::= VAR_DEFINITION:e1 {: RESULT = e1; :} | INFER_DEFINITION:e1 {: RESULT = e1; :};
+// UTILES
 
 SYM_OBTAIN ::= ID:name DETERMINE VAR_TYPE:tipe {: RESULT = new GrapeSymbol(name, SymbolType.ARRAY, tipe, 1, 0); :}
 | ID:name OBracket VALUE:size {: if (size.getType() != UnderlyingSymbolType.INT) {report_error("Array creation error", null);}:} CBracket DETERMINE VAR_TYPE:tipe {: RESULT = new GrapeSymbol(name, SymbolType.ARRAY, tipe, (double)size.getValue(), 0); :};
 
-SYM_ARGS ::= VAR_DEFINITION:arg SYM_ARGS_P:stack {:stack.add(arg); RESULT = stack.toArray(new VarNode[0]);:} | {:RESULT = new VarNode[0];:};
+// Definicion de variables
 
-SYM_ARGS_P ::= COMA VAR_DEFINITION:arg SYM_ARGS_P:stack {:stack.add(arg); RESULT = stack;:} | {:RESULT = new Stack<VarNode>();:};
+VAR_DEFINITION_GROUP ::= VAR_DEFINITION:e1 {: RESULT = e1; :};
 
 VAR_DEFINITION ::= VAR_INVOKER SYM_OBTAIN:s ASSIGN EXPRESION:val {:
 
-  if (s.getSubtype() != val.getTipo()) {
-    report_error("El tipo de la variable no coincide con el valor asignado", val);
-  }
-
-  symTable.addVariable(s);
-
   RESULT = new VarNode(s, val);
  
-
 :} | VAR_INVOKER SYM_OBTAIN:s {: 
-
-  symTable.addVariable(s); 
 
   RESULT = new VarNode(s, null); 
 
 :};
 
-INFER_DEFINITION ::= INFER_INVOKER ID:name ASSIGN EXPRESION:val {:
-
-  GrapeSymbol s = new GrapeSymbol(name, SymbolType.ARRAY, val.getTipo(), 1, 0);
-
-  symTable.addVariable(s);
-
-  RESULT = new VarNode(s, val);
-
-
-:} ;
 
 /* EXPRESIONES */
-
-/* ARITMETICAS */
 
 EXPRESION ::= EXPRESION:e1 PLUS EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2, Operator.ADD); :}
 | EXPRESION:e1 MINUS EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2, Operator.SUB); :}
@@ -219,20 +217,20 @@ EXPRESION ::= EXPRESION:e1 PLUS EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2
 | EXPRESION:e1 MOD EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2, Operator.MOD); :}
 | MINUS EXPRESION:e1 {: RESULT = new ExpresionNode(new ValueNode(new ValueContainer(0.0,UnderlyingSymbolType.INT)), e1, Operator.SUB); :}
 | OBracket EXPRESION:e1 CBracket {: RESULT = e1; :}
-| ID:e1 {: RESULT = new AddressNode(symTable.getVariable(e1)); :}
+| ID:e1 {: RESULT = new AddressNode(e1); :}
 | ESPECIAL_EXPRESIONS:e1 {: RESULT = e1; :}
 | VALUE:e1 {: RESULT = new ValueNode(e1); :};
 
-ESPECIAL_EXPRESIONS ::= ID:e1 INCREMENT {: RESULT = new IncrementNode(symTable.getVariable(e1), Operator.INCREMENT, true); :}
-| ID:e1 DECREMENT {: RESULT = new IncrementNode(symTable.getVariable(e1), Operator.DECREMENT, true); :}
-| INCREMENT ID:e1 {: RESULT = new IncrementNode(symTable.getVariable(e1), Operator.INCREMENT, false); :}
-| DECREMENT ID:e1 {: RESULT = new IncrementNode(symTable.getVariable(e1), Operator.DECREMENT, false); :};
+ESPECIAL_EXPRESIONS ::= ID:e1 INCREMENT {: RESULT = new IncrementNode(e1, Operator.INCREMENT, true); :}
+| ID:e1 DECREMENT {: RESULT = new IncrementNode(e1, Operator.DECREMENT, true); :}
+| INCREMENT ID:e1 {: RESULT = new IncrementNode(e1, Operator.INCREMENT, false); :}
+| DECREMENT ID:e1 {: RESULT = new IncrementNode(e1, Operator.DECREMENT, false); :};
 
 /* ASIGNACION */
 
 ASSIGN_DEFINITION_GROUP ::= ASSIGN_DEFINITION:e1 {: RESULT = e1; :} | ESPECIAL_EXPRESIONS:e1 {: RESULT = e1; :};
 
-ASSIGN_DEFINITION ::= ID:e1 ASSIGN EXPRESION:e2 {: RESULT = new AssignNode(symTable.getVariable(e1), e2); :};
+ASSIGN_DEFINITION ::= ID:e1 ASSIGN EXPRESION:e2 {: RESULT = new AssignNode(e1, e2); :};
 
 /* IF / CONDICIONALES */
 
@@ -246,47 +244,15 @@ EXPRESION ::= EXPRESION:e1 EQ EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2, 
 | EXPRESION:e1 OR EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2, Operator.OR); :}
 | EXPRESION:e1 XOR EXPRESION:e2 {: RESULT = new ExpresionNode(e1,e2, Operator.XOR); :};
 
-IF_DEFINITION ::= IF EXPRESION:conditional OPEN_BLOCK:e2 BLOCK:body CLOSE_BLOCK {: RESULT = new IfNode(conditional,body); :}
-| IF EXPRESION:conditional OPEN_BLOCK:e2 BLOCK:body CLOSE_BLOCK ELSE OPEN_BLOCK:e3 BLOCK:elseBlock CLOSE_BLOCK {: RESULT = new IfNode(conditional,body,elseBlock); :};
+IF_DEFINITION ::= IF_STATEMENT:e1 ELSE_STATEMENT:e2  {: e1.setElseBody(e2); RESULT = e1; :};
+
+ELSE_STATEMENT ::= ELSE OPEN_BLOCK BLOCK:elseBlock CLOSE_BLOCK  {: RESULT = elseBlock; :} | ;
+IF_STATEMENT ::= IF EXPRESION:conditional OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new IfNode(conditional,body); :};
 
 /* Bucles */
 
-FOR_DEFINITION ::= FOR VAR_DEFINITION_GROUP:instance Endline EXPRESION:conditional Endline ASSIGN_DEFINITION_GROUP:increment OPEN_BLOCK:e2 BLOCK:body CLOSE_BLOCK {: RESULT = new ForNode(instance,conditional,body,increment); :}
-| FOR Endline EXPRESION:conditional Endline ASSIGN_DEFINITION_GROUP:increment OPEN_BLOCK:e2 BLOCK:body CLOSE_BLOCK {: RESULT = new ForNode(null,conditional,body,increment); :}
-| FOR VAR_DEFINITION_GROUP:instance Endline EXPRESION:conditional Endline OPEN_BLOCK:e2 BLOCK:body CLOSE_BLOCK {: RESULT = new ForNode(instance,conditional,body,null); :}
-| FOR Endline EXPRESION:conditional Endline OPEN_BLOCK:e2 BLOCK:body CLOSE_BLOCK {: RESULT = new ForNode(null,conditional,body,null); :}
-| FOR Endline Endline OPEN_BLOCK:e2 BLOCK:body CLOSE_BLOCK {: RESULT = new ForNode(null,null,body,null); :};
-
-/* Funciones */
-
-/* EJEMPLO : sumar(int a, int b) -> int { return a + b; } */
-
-// FUNC_ARGS ::= VAR_DEFINITION:e1 {: RESULT = e1; :} | VAR_DEFINITION:e1 COMA FUNC_ARGS:e2 {: RESULT = new FuncArgsNode(e1,e2); :};
-
-EXPRESION ::= FUNC_CALL:e1 {: RESULT = e1; :};
-
-EXPRESION_ARRAY ::=  EXPRESION:e1 EXPRESION_ARRAY_P:stack {:stack.add(e1); RESULT = stack.toArray(new ReturnNode[0]);:} | {:RESULT = new ReturnNode[0];:};
-
-EXPRESION_ARRAY_P ::= COMA EXPRESION:e1 EXPRESION_ARRAY_P:stack {:stack.add(e1); RESULT = stack;:} | {:RESULT = new Stack<ReturnNode>();:};
-
-FUNC_DEFINITION ::= FUNC ID:name OBracket SYM_ARGS:params CBracket ARROW VAR_TYPE:tipe OPEN_BLOCK:e2 BLOCK:body CLOSE_BLOCK {: 
-  FunctionSymbol f = new FunctionSymbol(name, params, ASTExplorer.makeNewTmpVar(tipe, symTable)); // Crear funcion con su tipo de retorno especificado
-  symTable.addFunction(f);
-  RESULT = new FuncNode(f,body);  
-:};
-
-FUNC_CALL ::= ID:name OBracket EXPRESION_ARRAY:params CBracket {: 
-  FunctionSymbol f = symTable.getFunction(name);
-  if (f == null) {
-    report_error("La funcion no existe", null);
-  }
-
-  // Si el numero de argumentos no coincide con el numero de parametros de la funcion
-  if (f.getParameters().length != params.length) {
-    report_error("La llamada a la funcion " + name + " no tiene el numero correcto de parametros", null);
-  }
-
-  RESULT = new FuncCallNode(f,params);
-:};
-
-FUNC_RETURN ::= RETURN EXPRESION:e1 {: RESULT = new ReturnFuncNode(e1); :};
+FOR_DEFINITION ::= FOR VAR_DEFINITION_GROUP:instance Endline EXPRESION:conditional Endline ASSIGN_DEFINITION_GROUP:increment OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new ForNode(instance,conditional,body,increment); :}
+| FOR Endline EXPRESION:conditional Endline ASSIGN_DEFINITION_GROUP:increment OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new ForNode(null,conditional,body,increment); :}
+| FOR VAR_DEFINITION_GROUP:instance Endline EXPRESION:conditional Endline OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new ForNode(instance,conditional,body,null); :}
+| FOR Endline EXPRESION:conditional Endline OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new ForNode(null,conditional,body,null); :}
+| FOR Endline Endline OPEN_BLOCK BLOCK:body CLOSE_BLOCK  {: RESULT = new ForNode(null,null,body,null); :};

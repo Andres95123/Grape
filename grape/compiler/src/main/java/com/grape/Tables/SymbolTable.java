@@ -8,6 +8,8 @@ import com.grape.Symbols.GrapeSymbol;
 
 public class SymbolTable {
 
+    private int blockCounter = 0;
+
     HashMap<String, GrapeSymbol> varTable;
     HashMap<String, FunctionSymbol> funcTable;
 
@@ -25,9 +27,6 @@ public class SymbolTable {
 
     public void addVariable(GrapeSymbol symbol) {
 
-        if (hasFunctions()) {
-            symbol.setName(symbol.getName() + "_" + functionStack.peek().getName());
-        }
 
         if (!isSymbolUsed(symbol.getName())) {
 
@@ -41,7 +40,17 @@ public class SymbolTable {
 
     }
 
+    public void enterBlock() {
+        blockCounter++;
+        varStack.push((HashMap<String, GrapeSymbol>) varStack.peek().clone());
+    }
+
+    public void exitBlock() {
+        varStack.pop();
+    }
+
     public GrapeSymbol getVariable(String name) {
+
         if (!containsSymbol(name)) {
             throw new RuntimeException("Variable " + name + " not found");
         }
@@ -79,14 +88,9 @@ public class SymbolTable {
     public void enterFunction(FunctionSymbol function) {
         functionStack.push(function);
 
-        // Añadimos un nuevo bloque clon del anterior
-        varStack.push(new HashMap<>(varStack.peek()));
-
     }
 
     public FunctionSymbol popFunction() {
-        // Sacamos la tabla de variables de ese bloque
-        varStack.pop();
         // Sacamos la funcion
         return functionStack.pop();
     }

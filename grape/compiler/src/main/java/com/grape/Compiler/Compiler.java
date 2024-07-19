@@ -307,13 +307,13 @@ public class Compiler {
             case INCREMENT:
                 // Incremento de un valor :
                 // result++ -> result
-                textSection.append("\tinc dword " + code.getResult() + "\n");
+                textSection.append("\tinc qword " + code.getResult() + "\n");
                 break;
 
             case DECREMENT:
                 // Decremento de un valor :
                 // result-- -> result
-                textSection.append("\tdec dword" + code.getResult() + "\n");
+                textSection.append("\tdec qword" + code.getResult() + "\n");
                 break;
 
             // Etiquetas

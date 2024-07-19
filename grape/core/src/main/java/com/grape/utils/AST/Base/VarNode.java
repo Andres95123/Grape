@@ -1,14 +1,15 @@
-package com.grape.utils.AST;
+package com.grape.utils.AST.Base;
 
 import com.grape.Symbols.GrapeSymbol;
 import com.grape.Symbols.UnderlyingSymbolType;
+import com.grape.utils.AST.Node;
 
-public class VarNode extends ReturnNode {
+public class VarNode extends Expresion {
 
     private GrapeSymbol symbol;
-    private ReturnNode value;
+    private Node value;
 
-    public VarNode(GrapeSymbol symbol, ReturnNode value) {
+    public VarNode(GrapeSymbol symbol, Node value) {
         this.symbol = symbol;
         this.value = value;
     }
@@ -17,7 +18,7 @@ public class VarNode extends ReturnNode {
         return symbol;
     }
 
-    public ReturnNode getValue() {
+    public Node getValue() {
         return value;
     }
 

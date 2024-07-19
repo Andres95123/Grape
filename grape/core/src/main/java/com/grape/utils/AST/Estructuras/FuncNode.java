@@ -1,14 +1,15 @@
-package com.grape.utils.AST;
+package com.grape.utils.AST.Estructuras;
 
 import com.grape.Symbols.FunctionSymbol;
 import com.grape.Symbols.UnderlyingSymbolType;
+import com.grape.utils.AST.Node;
 
-public class FuncNode extends Node {
+public class FuncNode extends EstructuraControl {
 
     private FunctionSymbol functionSym;
-    private BlockNode body;
+    private BloqueComando body;
 
-    public FuncNode(FunctionSymbol funcSym, BlockNode body) {
+    public FuncNode(FunctionSymbol funcSym, BloqueComando body) {
         this.functionSym = funcSym;
         this.body = body;
     }
@@ -21,7 +22,7 @@ public class FuncNode extends Node {
         return functionSym.getName();
     }
 
-    public BlockNode getBody() {
+    public BloqueComando getBody() {
         return body;
     }
 

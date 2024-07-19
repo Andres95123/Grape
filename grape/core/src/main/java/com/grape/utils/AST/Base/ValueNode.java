@@ -1,9 +1,10 @@
-package com.grape.utils.AST;
+package com.grape.utils.AST.Base;
 
 import com.grape.Symbols.UnderlyingSymbolType;
 import com.grape.utils.ValueContainer;
+import com.grape.utils.AST.Node;
 
-public class ValueNode extends ReturnNode {
+public class ValueNode extends Expresion {
 
     private Object value;
     private UnderlyingSymbolType tipo;

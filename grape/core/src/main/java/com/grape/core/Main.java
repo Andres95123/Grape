@@ -8,6 +8,8 @@ import com.grape.cup.Parser;
 import com.grape.jflex.Scanner;
 import com.grape.utils.ASTExplorer;
 import com.grape.utils.AST.*;
+import com.grape.utils.AST.Estructuras.BloqueComando;
+import com.grape.utils.AST.Estructuras.RootNode;
 
 import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.Symbol;
@@ -57,10 +59,10 @@ public class Main {
                 return;
             }
 
-            BlockNode root = (BlockNode) parseado.value;
+            RootNode root = (RootNode) parseado.value;
             SymbolTable st = parser.symTable;
 
-            ASTExplorer.explore(root, st);
+            ASTExplorer.explore(root.getEstructuras(), st);
 
             Compiler.compile(st, ASTExplorer.allCode, "output.asm");
 

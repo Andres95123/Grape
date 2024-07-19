@@ -3,25 +3,21 @@ package com.grape.utils;
 import java.util.ArrayList;
 
 import com.grape.IntermedianCode.*;
-import com.grape.Symbols.FunctionSymbol;
 import com.grape.Symbols.GrapeSymbol;
 import com.grape.Symbols.SymbolType;
 import com.grape.Symbols.UnderlyingSymbolType;
 import com.grape.Tables.SymbolTable;
-import com.grape.utils.AST.AddressNode;
-import com.grape.utils.AST.AssignNode;
-import com.grape.utils.AST.BlockNode;
-import com.grape.utils.AST.ExpresionNode;
-import com.grape.utils.AST.ForNode;
-import com.grape.utils.AST.FuncCallNode;
-import com.grape.utils.AST.FuncNode;
-import com.grape.utils.AST.IfNode;
-import com.grape.utils.AST.IncrementNode;
 import com.grape.utils.AST.Node;
-import com.grape.utils.AST.ReturnFuncNode;
-import com.grape.utils.AST.ReturnNode;
-import com.grape.utils.AST.ValueNode;
-import com.grape.utils.AST.VarNode;
+import com.grape.utils.AST.Base.ExpresionNode;
+import com.grape.utils.AST.Base.ValueNode;
+import com.grape.utils.AST.Base.VarNode;
+import com.grape.utils.AST.Comandos.AddressNode;
+import com.grape.utils.AST.Comandos.AssignNode;
+import com.grape.utils.AST.Comandos.IncrementNode;
+import com.grape.utils.AST.Estructuras.BloqueComando;
+import com.grape.utils.AST.Estructuras.EstructuraControl;
+import com.grape.utils.AST.Estructuras.ForNode;
+import com.grape.utils.AST.Estructuras.IfNode;
 
 import java.util.List;
 
@@ -32,16 +28,18 @@ public class ASTExplorer {
     public static List<IntermedianCode> allCode;
     private static SymbolTable symTable;
 
-    public static void explore(BlockNode node, SymbolTable table) {
+    public static void explore(EstructuraControl[] node, SymbolTable table) {
         allCode = new ArrayList<>();
         symTable = table;
-        explore((Node) node, allCode);
+        for (EstructuraControl n : node) {
+            explore(n, allCode);
+        }
     }
 
     private static String explore(Node node, List<IntermedianCode> intermediateCode) {
 
-        if (node instanceof BlockNode) {
-            BlockNode block = (BlockNode) node;
+        if (node instanceof BloqueComando) {
+            BloqueComando block = (BloqueComando) node;
             for (Node n : block.getNodes()) {
                 explore(n, intermediateCode);
             }
@@ -52,8 +50,8 @@ public class ASTExplorer {
         if (node instanceof VarNode) {
             VarNode var = (VarNode) node;
 
-            // Añadimos el symbolo
-            // symTable.addVariable(var.getSymbol());
+            // Añadimos a la tabla de simbolos la variable
+            symTable.addVariable(var.getSymbol());
 
             if (!var.isNull()) {
                 String valueVar = explore(var.getValue(), intermediateCode);
@@ -67,13 +65,21 @@ public class ASTExplorer {
         if (node instanceof AddressNode) {
             AddressNode address = (AddressNode) node;
 
-            return address.getSymbol().getLocation();
+            String varName = address.getSymbol();
+
+            return symTable.getVariable(varName).getName();
         }
 
         if (node instanceof ValueNode) {
             ValueNode value = (ValueNode) node;
 
-            return value.getValue().toString();
+            // Guardamos el valor en una variable temporal
+            GrapeSymbol tmpVar = makeNewTmpVar(value.getTipo());
+
+            intermediateCode.add(new IntermedianCode(Code.ASSIGN, value.getValue(), null,
+                    tmpVar.getLocation()));
+
+            return tmpVar.getName();
         }
 
         if (node instanceof IncrementNode) {
@@ -81,19 +87,20 @@ public class ASTExplorer {
 
             boolean post = inc.isPost();
 
-            GrapeSymbol symbol = inc.getSymbol();
-            GrapeSymbol tmpVar = makeNewTmpVar(inc.getTipo());
+            GrapeSymbol symbol = symTable.getVariable(inc.getSymbol());
+            GrapeSymbol tmpVar = makeNewTmpVar(symbol.getSubtype());
 
             // Si post es false, es pre incremento/decremento
             if (!post) {
-
                 // Incrementamos el simbolo original
                 intermediateCode.add(
-                        new IntermedianCode(Code.valueOf(inc.getOperator().name()), null, null, symbol.getLocation()));
+                        new IntermedianCode(Code.valueOf(inc.getOperator().name()), null, null,
+                                symbol.getLocation()));
 
                 // Asignamos el valor del simbolo original a la variable temporal
                 intermediateCode
-                        .add(new IntermedianCode(Code.ASSIGN, symbol.getLocation(), null, tmpVar.getLocation()));
+                        .add(new IntermedianCode(Code.ASSIGN, symbol.getLocation(), null,
+                                tmpVar.getLocation()));
 
                 // Devolvemos la variable temporal
                 return tmpVar.getLocation();
@@ -102,16 +109,33 @@ public class ASTExplorer {
             // Si post es true, es post incremento/decremento
 
             // Asignamos el valor del simbolo original a la variable temporal
-            intermediateCode.add(new IntermedianCode(Code.ASSIGN, symbol.getLocation(), null, tmpVar.getLocation()));
+            intermediateCode.add(new IntermedianCode(Code.ASSIGN, symbol.getLocation(),
+                    null, tmpVar.getLocation()));
 
             // Incrementamos el simbolo original
             intermediateCode
-                    .add(new IntermedianCode(Code.valueOf(inc.getOperator().name()), null, null, symbol.getLocation()));
+                    .add(new IntermedianCode(Code.valueOf(inc.getOperator().name()), null, null,
+                            symbol.getLocation()));
 
             // Devolvemos la variable temporal
             return tmpVar.getLocation();
-
         }
+
+        // // Si post es true, es post incremento/decremento
+
+        // // Asignamos el valor del simbolo original a la variable temporal
+        // intermediateCode.add(new IntermedianCode(Code.ASSIGN, symbol.getLocation(),
+        // null, tmpVar.getLocation()));
+
+        // // Incrementamos el simbolo original
+        // intermediateCode
+        // .add(new IntermedianCode(Code.valueOf(inc.getOperator().name()), null, null,
+        // symbol.getLocation()));
+
+        // // Devolvemos la variable temporal
+        // return tmpVar.getLocation();
+
+        // }
 
         if (node instanceof IfNode) {
 
@@ -141,33 +165,41 @@ public class ASTExplorer {
             }
 
             intermediateCode.add(new IntermedianCode(Code.LABEL, null, null, etiqueta_fin)); // Etiqueta para el salto
-                                                                                             // al final del if
+                                                                                             // al
+                                                                                             // final del if
 
             return null;
-
         }
+
+        // intermediateCode.add(new IntermedianCode(Code.LABEL, null, null,
+        // etiqueta_fin)); // Etiqueta para el salto
+        // // al final del if
+
+        // return null;
+
+        // }
 
         if (node instanceof ForNode) {
 
             ForNode forNode = (ForNode) node;
 
-            String etiqueta_inicio = makeNewEtiqueta(); // Etiqueta para el inicio del for
+            String etiqueta_inicio = makeNewEtiqueta(); // Etiqueta para el inicio del
+            // for
             String etiqueta_fin = makeNewEtiqueta(); // Etiqueta para el final del for
 
             if (forNode.getInit() != null) {
                 explore(forNode.getInit(), intermediateCode); // Exploramos la inicializacion del for
             }
 
-            intermediateCode.add(new IntermedianCode(Code.LABEL, null, null, etiqueta_inicio)); // Etiqueta para el
-            // inicio del for
+            intermediateCode.add(new IntermedianCode(Code.LABEL, null, null,
+                    etiqueta_inicio)); // Etiqueta para el inicio del for
 
             if (forNode.getCondition() != null) {
                 String condition = explore(forNode.getCondition(), intermediateCode); // Contiene el resultado de la
                                                                                       // condicion en una var
 
-                intermediateCode.add(new IntermedianCode(Code.JEQ, condition, "0", etiqueta_fin)); // Si la condicion es
-                // falsa, salta a la
-                // etiqueta
+                intermediateCode.add(new IntermedianCode(Code.JEQ, condition, "0",
+                        etiqueta_fin)); // Si la condicion es falsa, salta a la etiqueta
             }
 
             explore(forNode.getBody(), intermediateCode); // Exploramos el cuerpo del for
@@ -176,10 +208,11 @@ public class ASTExplorer {
                 explore(forNode.getIncrement(), intermediateCode); // Exploramos el incremento del for
             }
 
-            intermediateCode.add(new IntermedianCode(Code.JMP, null, null, etiqueta_inicio)); // Salta al inicio del for
+            intermediateCode.add(new IntermedianCode(Code.JMP, null, null,
+                    etiqueta_inicio)); // Salta al inicio del for
 
-            intermediateCode.add(new IntermedianCode(Code.LABEL, null, null, etiqueta_fin)); // Etiqueta para el final
-            // del for
+            intermediateCode.add(new IntermedianCode(Code.LABEL, null, null,
+                    etiqueta_fin)); // Etiqueta para el final del for
 
             return null;
         }
@@ -187,12 +220,16 @@ public class ASTExplorer {
         if (node instanceof AssignNode) {
             AssignNode assign = (AssignNode) node;
 
+            GrapeSymbol var = symTable.getVariable(assign.getVar());
+
             String value = explore(assign.getValue(), intermediateCode);
+            GrapeSymbol valueS = symTable.getVariable(value);
 
             intermediateCode
-                    .add(new IntermedianCode(Code.ASSIGN, value, null, assign.getVar().getLocation()));
+                    .add(new IntermedianCode(Code.ASSIGN, valueS.getLocation(), null,
+                            var.getLocation()));
 
-            return assign.getVar().getLocation();
+            return var.getLocation();
         }
 
         if (node instanceof ExpresionNode) {
@@ -201,87 +238,96 @@ public class ASTExplorer {
             String left = explore(exp.getLeft(), intermediateCode);
             String right = explore(exp.getRight(), intermediateCode);
 
-            GrapeSymbol tmpVar = makeNewTmpVar(exp.getTipo());
+            GrapeSymbol leftS = symTable.getVariable(left);
+            GrapeSymbol rightS = symTable.getVariable(right);
+
+            if (leftS.getSubtype() != rightS.getSubtype()) {
+                throw new RuntimeException("Tipos incompatibles en la expresion");
+            }
+
+            GrapeSymbol tmpVar = makeNewTmpVar(leftS.getSubtype());
 
             intermediateCode.add(
-                    new IntermedianCode(Code.valueOf(exp.getOperator().name()), left, right, tmpVar.getLocation()));
+                    new IntermedianCode(Code.valueOf(exp.getOperator().name()), leftS.getLocation(),
+                            rightS.getLocation(), tmpVar.getLocation()));
 
             return tmpVar.getLocation();
         }
 
-        if (node instanceof FuncNode) {
-            FuncNode func = (FuncNode) node;
-            List<IntermedianCode> funcCode = new ArrayList<>();
+        // if (node instanceof FuncNode) {
+        // FuncNode func = (FuncNode) node;
+        // List<IntermedianCode> funcCode = new ArrayList<>();
 
-            // Añadimos la funcion
-            // symTable.addFunction(func.getFunctionSym());
+        // // Indicamos que estamos dentro de una funcion
+        // symTable.enterFunction(symTable.getFunction(func.getName()));
 
-            // Indicamos que estamos dentro de una funcion
-            symTable.enterFunction(symTable.getFunction(func.getName()));
+        // // Hacemos un pop de el salto de retorno y lo guardamos en r10 para poder
+        // hacer
+        // // un push al retornar
+        // funcCode.add(new IntermedianCode(Code.POP, null, null, "r10"));
 
-            // Hacemos un pop de el salto de retorno y lo guardamos en r10 para poder hacer
-            // un push al retornar
-            funcCode.add(new IntermedianCode(Code.POP, null, null, "r10"));
+        // // Exploramos los parametros
+        // for (int i = func.getParameters().length - 1; i >= 0; i--) {
+        // ReturnNode n = (ReturnNode) func.getParameters()[i];
+        // String var = explore(n, funcCode);
 
-            // Exploramos los parametros
-            for (int i = func.getParameters().length - 1; i >= 0; i--) {
-                ReturnNode n = (ReturnNode) func.getParameters()[i];
-                String var = explore(n, funcCode);
+        // // Guardamos en var sacado de la pila
+        // funcCode.add(new IntermedianCode(Code.POP, null, null, var));
+        // }
 
-                // Guardamos en var sacado de la pila
-                funcCode.add(new IntermedianCode(Code.POP, null, null, var));
-            }
+        // // Exploramos el cuerpo de la funcion
 
-            // Exploramos el cuerpo de la funcion
+        // explore(func.getBody(), funcCode);
 
-            explore(func.getBody(), funcCode);
+        // FunctionSymbol function = symTable.getFunction(func.getName());
+        // function.setFuncCode(funcCode);
 
-            FunctionSymbol function = symTable.getFunction(func.getName());
-            function.setFuncCode(funcCode);
+        // return null;
+        // }
 
-            return null;
-        }
+        // if (node instanceof FuncCallNode) {
+        // FuncCallNode funcCall = (FuncCallNode) node;
 
-        if (node instanceof FuncCallNode) {
-            FuncCallNode funcCall = (FuncCallNode) node;
+        // // Metemos los parametros en la pila
+        // for (ReturnNode n : funcCall.getParameters()) {
+        // String value = explore(n, intermediateCode);
+        // intermediateCode.add(new IntermedianCode(Code.PUSH, null, null, value));
+        // }
 
-            // Metemos los parametros en la pila
-            for (ReturnNode n : funcCall.getParameters()) {
-                String value = explore(n, intermediateCode);
-                intermediateCode.add(new IntermedianCode(Code.PUSH, null, null, value));
-            }
+        // // Llamamos a la funcion
+        // intermediateCode.add(new IntermedianCode(Code.CALL, null, null,
+        // funcCall.getFuncSymbol().getName()));
 
-            // Llamamos a la funcion
-            intermediateCode.add(new IntermedianCode(Code.CALL, null, null, funcCall.getFuncSymbol().getName()));
+        // // Creamos una variable temporal para guardar el valor de retorno
+        // GrapeSymbol tmpVar = makeNewTmpVar(funcCall.getTipo());
+        // String funcReturnVar =
+        // funcCall.getFuncSymbol().getReturnSymbol().getLocation();
 
-            // Creamos una variable temporal para guardar el valor de retorno
-            GrapeSymbol tmpVar = makeNewTmpVar(funcCall.getTipo());
-            String funcReturnVar = funcCall.getFuncSymbol().getReturnSymbol().getLocation();
+        // // Guardamos
+        // intermediateCode.add(new IntermedianCode(Code.ASSIGN, funcReturnVar, null,
+        // tmpVar.getLocation()));
 
-            // Guardamos
-            intermediateCode.add(new IntermedianCode(Code.ASSIGN, funcReturnVar, null, tmpVar.getLocation()));
+        // return tmpVar.getLocation();
 
-            return tmpVar.getLocation();
+        // }
 
-        }
+        // if (node instanceof ReturnFuncNode) {
+        // ReturnFuncNode returnFunc = (ReturnFuncNode) node;
 
-        if (node instanceof ReturnFuncNode) {
-            ReturnFuncNode returnFunc = (ReturnFuncNode) node;
+        // if (!symTable.hasFunctions()) {
+        // throw new RuntimeException("Return statement outside of a function");
+        // }
 
-            if (!symTable.hasFunctions()) {
-                throw new RuntimeException("Return statement outside of a function");
-            }
+        // String value = explore(returnFunc.getReturnNode(), intermediateCode);
 
-            String value = explore(returnFunc.getReturnNode(), intermediateCode);
+        // // Hacemos un push del valor de retorno
+        // intermediateCode.add(new IntermedianCode(Code.PUSH, null, null, "r10"));
 
-            // Hacemos un push del valor de retorno
-            intermediateCode.add(new IntermedianCode(Code.PUSH, null, null, "r10"));
+        // intermediateCode.add(new IntermedianCode(Code.RETURN, value, null,
+        // symTable.popFunction().getReturnSymbol().getLocation()));
 
-            intermediateCode.add(new IntermedianCode(Code.RETURN, value, null,
-                    symTable.popFunction().getReturnSymbol().getLocation()));
-
-            return null;
-        }
+        // return null;
+        // }
 
         throw new RuntimeException("Unknown node type: " + node.getClass().getName());
 
