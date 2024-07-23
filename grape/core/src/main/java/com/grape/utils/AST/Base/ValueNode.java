@@ -20,7 +20,7 @@ public class ValueNode extends Expresion {
             case INT:
                 return value + "";
             case FLOAT:
-                return "_float64(" + value + ")";
+                return value + "";
             case CHAR:
                 return "'" + (char) value + "'";
             case BOOL:

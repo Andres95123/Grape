@@ -1,5 +1,6 @@
-var x(100):int;
+vine mathLib
 
-for var i:int = 0; i<100;i++ {
-    x = i;
-}
+var d:float = 43.96;
+var r:float = d/2.0;
+
+var area:float = PI * Pow(r,2);

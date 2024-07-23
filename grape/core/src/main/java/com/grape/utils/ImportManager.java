@@ -66,9 +66,6 @@ public class ImportManager {
 
         }
 
-        // Restauramos la tabla de simbolos original
-        // ASTExplorer.symTable = originalSymTable;
-
         return newNodes.toArray(new EstructuraControl[0]);
 
     }

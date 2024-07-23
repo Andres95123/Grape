@@ -3,6 +3,7 @@ package com.grape.utils;
 import java.util.ArrayList;
 
 import com.grape.IntermedianCode.*;
+import com.grape.Symbols.ConstantSymbol;
 import com.grape.Symbols.FunctionSymbol;
 import com.grape.Symbols.GrapeSymbol;
 import com.grape.Symbols.Libreria;
@@ -34,10 +35,10 @@ public class ASTExplorer {
 
     public static SymbolTable symTable = new SymbolTable();
 
-    public static List<IntermedianCode> allCode;
+    public static List<IntermedianCode> allCode = new ArrayList<>();
 
     public static void explore(EstructuraControl[] node) {
-        allCode = new ArrayList<>();
+
         for (EstructuraControl n : node) {
             explore(n, allCode);
         }
@@ -63,9 +64,14 @@ public class ASTExplorer {
             if (!var.isNull()) {
                 String valueVar = explore(var.getValue(), intermediateCode);
                 GrapeSymbol valueS = symTable.getVariable(valueVar);
-                intermediateCode
-                        .add(new IntermedianCode(Code.ASSIGN, valueS.getLocation(), null,
-                                var.getSymbol().getLocation()));
+
+                if (var.getSymbol().getSubtype() != valueS.getSubtype()) {
+                    throw new RuntimeException("Tipos incompatibles en la asignacion");
+                }
+
+                intermediateCode.add(new IntermedianCode(Code.getAssign(var.getTipo()), valueS.getLocation(), null,
+                        var.getSymbol().getLocation()));
+
             }
 
             return var.getSymbol().getName();
@@ -83,10 +89,13 @@ public class ASTExplorer {
             ValueNode value = (ValueNode) node;
 
             // Guardamos el valor en una variable temporal
-            GrapeSymbol tmpVar = makeNewTmpVar(value.getTipo());
+            // GrapeSymbol tmpVar = makeNewTmpVar(value.getTipo());
 
-            intermediateCode.add(new IntermedianCode(Code.ASSIGN, value.getValue(), null,
-                    tmpVar.getLocation()));
+            // intermediateCode.add(new IntermedianCode(Code.getAssign(value.getTipo()),
+            // value.getValue(), null,
+            // tmpVar.getLocation()));
+
+            ConstantSymbol tmpVar = makeNewConstantVar(value.getTipo(), value.getValue());
 
             return tmpVar.getName();
         }
@@ -228,13 +237,18 @@ public class ASTExplorer {
 
             if (index != null) {
                 GrapeSymbol indexS = symTable.getVariable(index);
+                // Coma flotante
+
+                // Entero
                 intermediateCode.add(
                         new IntermedianCode(Code.ASSIGN, valueS.getLocation(), indexS.getLocation(),
                                 var.getLocation("rbx")));
             } else {
+
                 intermediateCode.add(
-                        new IntermedianCode(Code.ASSIGN, valueS.getLocation(), null,
+                        new IntermedianCode(Code.getAssign(var.getSubtype()), valueS.getLocation(), null,
                                 var.getLocation()));
+
             }
 
             return var.getName();
@@ -255,8 +269,12 @@ public class ASTExplorer {
 
             GrapeSymbol tmpVar = makeNewTmpVar(leftS.getSubtype());
 
+            String operator = leftS.getSubtype() == UnderlyingSymbolType.FLOAT
+                    ? "F" + exp.getOperator().name()
+                    : exp.getOperator().name();
+
             intermediateCode.add(
-                    new IntermedianCode(Code.valueOf(exp.getOperator().name()), leftS.getLocation(),
+                    new IntermedianCode(Code.valueOf(operator), leftS.getLocation(),
                             rightS.getLocation(), tmpVar.getLocation()));
 
             return tmpVar.getName();
@@ -382,6 +400,14 @@ public class ASTExplorer {
 
     public static GrapeSymbol makeNewTmpVar(UnderlyingSymbolType type) {
         GrapeSymbol tmpVar = new GrapeSymbol("_T" + numTmpVar++, SymbolType.ARRAY, type, 1, 0);
+
+        symTable.addVariable(tmpVar);
+
+        return tmpVar;
+    }
+
+    public static ConstantSymbol makeNewConstantVar(UnderlyingSymbolType type, Object value) {
+        ConstantSymbol tmpVar = new ConstantSymbol("_C" + numTmpVar++, SymbolType.ARRAY, type, 1, 0, value);
 
         symTable.addVariable(tmpVar);
 

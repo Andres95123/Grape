@@ -10,6 +10,7 @@ import java.nio.Buffer;
 import java.util.List;
 
 import com.grape.IntermedianCode.IntermedianCode;
+import com.grape.Symbols.ConstantSymbol;
 import com.grape.Symbols.FunctionSymbol;
 import com.grape.Symbols.GrapeSymbol;
 import com.grape.Symbols.UnderlyingSymbolType;
@@ -17,6 +18,7 @@ import com.grape.Tables.SymbolTable;
 
 public class Compiler {
 
+    static StringBuilder dataSection;
     static StringBuilder bssSection;
     static StringBuilder textSection;
     static StringBuilder functionsSection;
@@ -27,6 +29,7 @@ public class Compiler {
             throws IOException {
 
         // Instanciar zona datos
+        dataSection = new StringBuilder();
         bssSection = new StringBuilder();
         textSection = new StringBuilder();
         functionsSection = new StringBuilder();
@@ -51,6 +54,11 @@ public class Compiler {
 
         // Instanciar zona texto
         outputBuilder = new StringBuilder();
+
+        if (dataSection.length() > 0) {
+            outputBuilder.append("section .data\n");
+            outputBuilder.append(dataSection.toString());
+        }
 
         // Generar codigo
         if (bssSection.length() > 0) {
@@ -107,7 +115,15 @@ public class Compiler {
                 textSection.append("\tadd rax, rbx\n");
                 textSection.append("\tmov " + code.getResult() + ", rax\n");
                 break;
-
+            case FADD:
+                // Suma dos valores flotantes
+                // arg1 + arg2 -> result
+                // rax = arg1, rax = rax + arg2, result = rax
+                textSection.append("\tfld qword " + code.getArg1() + "\n");
+                textSection.append("\tfld qword " + code.getArg2() + "\n");
+                textSection.append("\tfadd\n");
+                textSection.append("\tfstp qword " + code.getResult() + "\n");
+                break;
             case SUB:
                 // Resta dos valores :
                 // arg1 - arg2 -> result
@@ -116,6 +132,15 @@ public class Compiler {
                 textSection.append("\tmov rbx, " + code.getArg2() + "\n");
                 textSection.append("\tsub rax, rbx\n");
                 textSection.append("\tmov " + code.getResult() + ", rax\n");
+                break;
+            case FSUB:
+                // Resta dos valores flotantes
+                // arg1 - arg2 -> result
+                // rax = arg1, rax = rax - arg2, result = rax
+                textSection.append("\tfld qword " + code.getArg1() + "\n");
+                textSection.append("\tfld qword " + code.getArg2() + "\n");
+                textSection.append("\tfsub\n");
+                textSection.append("\tfstp qword " + code.getResult() + "\n");
                 break;
 
             case MUL:
@@ -128,6 +153,16 @@ public class Compiler {
                 textSection.append("\tmov " + code.getResult() + ", rax\n");
                 break;
 
+            case FMUL:
+                // Multiplica dos valores flotantes
+                // arg1 * arg2 -> result
+                // rax = arg1, rax = rax * arg2, result = rax
+                textSection.append("\tfld qword " + code.getArg1() + "\n");
+                textSection.append("\tfld qword " + code.getArg2() + "\n");
+                textSection.append("\tfmul\n");
+                textSection.append("\tfstp qword " + code.getResult() + "\n");
+                break;
+
             case DIV: // NO COMPROBADO
                 // Divide dos valores :
                 // arg1 / arg2 -> result
@@ -136,6 +171,16 @@ public class Compiler {
                 textSection.append("\tmov rbx, " + code.getArg2() + "\n");
                 textSection.append("\tidiv rbx\n");
                 textSection.append("\tmov " + code.getResult() + ", rax\n");
+                break;
+
+            case FDIV:
+                // Divide dos valores flotantes
+                // arg1 / arg2 -> result
+                // rax = arg1, rax = rax / arg2, result = rax
+                textSection.append("\tfld qword " + code.getArg1() + "\n");
+                textSection.append("\tfld qword " + code.getArg2() + "\n");
+                textSection.append("\tfdiv\n");
+                textSection.append("\tfstp qword " + code.getResult() + "\n");
                 break;
 
             case MOD: // NO COMPROBADO A PARTIR DE AQUI
@@ -148,6 +193,20 @@ public class Compiler {
                 textSection.append("\tmov " + code.getResult() + ", rdx\n");
                 break;
 
+            case FMOD:
+                // Módulo de dos valores flotantes
+                // arg1 % arg2 -> result
+                // fld qword arg1, fld qword arg2, fdiv, fld st0, frndint, fmul, fsub, fstp
+                // qword result
+                textSection.append("\tfld qword " + code.getArg1() + "\n");
+                textSection.append("\tfld qword " + code.getArg2() + "\n");
+                textSection.append("\tfdiv\n");
+                textSection.append("\tfld st0\n");
+                textSection.append("\tfrndint\n");
+                textSection.append("\tfmul\n");
+                textSection.append("\tfsub\n");
+                textSection.append("\tfstp qword " + code.getResult() + "\n");
+                break;
             case AND:
                 // Operacion AND de dos valores :
                 // arg1 && arg2 -> result
@@ -319,6 +378,15 @@ public class Compiler {
 
                 break;
 
+            case ASSIGN_FLOAT:
+                // Añadimos a la pila el valor de un float y lo asignamos a una variable
+                // arg1 -> result
+
+                textSection.append("\tfld qword " + code.getArg1() + "\n");
+                textSection.append("\tfstp qword " + code.getResult() + "\n");
+
+                break;
+
             case INCREMENT:
                 // Incremento de un valor :
                 // result++ -> result
@@ -405,9 +473,19 @@ public class Compiler {
 
             switch (symbol.getType()) {
                 case ARRAY: // Array y Variables
-                    bssSection.append(
-                            symbol.getName() + " " + UnderlyingSymbolType.toAsemblyOperation(symbol.getSubtype(), false)
-                                    + " " + symbol.getSize() + "\n");
+
+                    if (symbol instanceof ConstantSymbol) {
+                        dataSection.append(
+                                symbol.getName() + " "
+                                        + UnderlyingSymbolType.toAsemblyOperation(symbol.getSubtype(), true)
+                                         + " " + ((ConstantSymbol) symbol).getValue() + "\n");
+                    } else if (symbol instanceof GrapeSymbol) {
+
+                        bssSection.append(
+                                symbol.getName() + " "
+                                        + UnderlyingSymbolType.toAsemblyOperation(symbol.getSubtype(), false)
+                                        + " " + symbol.getSize() + "\n");
+                    }
                     break;
 
                 case STRUCT: // Struct
