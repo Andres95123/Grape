@@ -330,6 +330,7 @@ public class Compiler {
                 textSection.append("\tsetle al\n");
                 textSection.append("\tmovzx rax, al\n");
                 textSection.append("\tmov " + code.getResult() + ", rax\n");
+                break;
 
             case JEQ:
 

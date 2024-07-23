@@ -65,6 +65,9 @@ public class Main {
 
             Compiler.compile(ASTExplorer.symTable, ASTExplorer.allCode, "output/main.asm");
 
+            System.out
+                    .println("Compilado correctamente : en " + (System.nanoTime() - start) / Math.pow(10, 9) + " s\n");
+
         } catch (Exception e) {
             System.err.println("error: " + e);
             e.printStackTrace(System.err);

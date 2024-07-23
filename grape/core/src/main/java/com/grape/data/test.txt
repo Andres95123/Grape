@@ -1,6 +1,14 @@
 vine mathLib
 
-var d:float = 43.96;
-var r:float = d/2.0;
 
-var area:float = PI * Pow(r,2);
+var resultado:int;
+
+var opcion1:int = Factorial(3);
+var opcion2:int = Factorial(6);
+
+if opcion1 > opcion2 {
+    resultado = opcion1;
+} else {
+    resultado = opcion2;
+}
+

@@ -13,3 +13,32 @@ fn Positive(var x:int) -> int {
     } 
     rtn x;
 }
+
+fn Negative(var x:int) -> int {
+    if x > 0 {
+        rtn -x;
+    } 
+    rtn x;
+}
+
+fn Factorial(var x:int) -> int {
+    var result:int = 1;
+    for var i:int = 1; i<=x;i++ {
+        result = result * i;
+    }
+    rtn result;
+}
+
+fn Max(var x:int, var y:int) -> int {
+    if x > y {
+        rtn x;
+    }
+    rtn y;
+}
+
+fn Min(var x:int, var y:int) -> int {
+    if x < y {
+        rtn x;
+    }
+    rtn y;
+}
